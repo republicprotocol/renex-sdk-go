@@ -1,21 +1,31 @@
-package wallet
+package funds
 
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/republicprotocol/renex-sdk-go/adapter/funds"
 )
 
-type wallet struct {
-	passphrase string
+type service struct {
+	funds.Adapter
 }
 
-type Output interface {
-	GetTransactOpts(passphrase string) (*bind.TransactOpts, error)
+type Service interface {
+	Deposit(token uint32, value *big.Int)
+	Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey)
 }
 
-type Input interface {
-	Deposit(Token common.Address, value *big.Int)
-	Withdraw(Token common.Address, value *big.Int)
+func (service *service) Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey) error {
+	sig, err := service.RequestWithdrawalSignature(token, value);
+	if err != nil {
+		if !forced {
+			return err
+		}
+		if err := service.RequestWithdrawalFailSafeTrigger(); err != nil {
+			return err
+		}
+		if err := service.RequestWithdrawalFailSafe(tokenCode uint32, value *big.Int); err != nil {
+			return err
+		}
+	}
 }
