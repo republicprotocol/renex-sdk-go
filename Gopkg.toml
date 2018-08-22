@@ -25,6 +25,17 @@
 #   unused-packages = true
 
 
+[[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.12"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/republicprotocol/renex-ingress-go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/republicprotocol/republic-go"
+
 [prune]
   go-tests = true
-  unused-packages = true
