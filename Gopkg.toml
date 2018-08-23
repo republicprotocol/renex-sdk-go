@@ -31,10 +31,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/republicprotocol/renex-ingress-go"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/republicprotocol/republic-go"
 
 [prune]
