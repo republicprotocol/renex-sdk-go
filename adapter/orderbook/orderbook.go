@@ -9,12 +9,16 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
+	"github.com/republicprotocol/republic-go/crypto"
+	"github.com/republicprotocol/republic-go/identity"
 	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republic-go/registry"
 )
 
 type adapter struct {
@@ -25,20 +29,20 @@ type adapter struct {
 }
 
 type Adapter interface {
-	RequestOpenOrder(order order.Order, signature string) error
-	RequestCloseOrder(orderID order.ID, signature string) error
+	RequestOpenOrder(order order.Order, signature []byte) error
+	RequestCloseOrder(orderID order.ID, signature []byte) error
 
-	ListOrders() ([]order.Order, []string, []uint8, error)
+	ListOrders() ([]order.ID, []string, []uint8, error)
 
 	Sign([]byte) ([]byte, error)
 }
 
 func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) (Adapter, error) {
-	orderbook, err := bindings.NewOrderbook(client.OrderbookAddress(), client.Conn())
+	orderbook, err := bindings.NewOrderbook(client.OrderbookAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
 	}
-	darknodeRegistry, err := bindings.NewDarknodeRegistry(client.DarknodeRegistryAddress(), client.Conn())
+	darknodeRegistry, err := bindings.NewDarknodeRegistry(client.DarknodeRegistryAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
 	}
@@ -46,17 +50,17 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) 
 		orderbookContract:        orderbook,
 		darknodeRegistryContract: darknodeRegistry,
 		httpAddress:              httpAddress,
-	}
+	}, nil
 }
 
-func (adapter *adapter) RequestOpenOrder(order order.Order, signature string) error {
+func (adapter *adapter) RequestOpenOrder(order order.Order, signature []byte) error {
 	mapping, err := adapter.buildOrderMapping(order, signature)
 	if err != nil {
 		return err
 	}
 
 	req := httpadapter.OpenOrderRequest{
-		Signature:             signature,
+		Signature:             base64.StdEncoding.EncodeToString(signature),
 		OrderFragmentMappings: []httpadapter.OrderFragmentMapping{mapping},
 	}
 
@@ -68,7 +72,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order, signature string) er
 
 	resp, err := http.DefaultClient.Post(fmt.Sprintf("%s/orders", adapter.httpAddress), "application/json", buf)
 	if err != nil {
-		return 0, nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -76,13 +80,13 @@ func (adapter *adapter) RequestOpenOrder(order order.Order, signature string) er
 		return nil
 	}
 
-	return fmt.Errorf("Unexpected status code %d", status)
+	return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 }
 
-func (adapter *adapter) RequestCloseOrder(orderID order.ID, signature string) error {
+func (adapter *adapter) RequestCloseOrder(orderID order.ID, signature []byte) error {
 
 	client := http.Client{}
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/orders?id=%s&signature=%s", adapter.httpAddress, orderID.String(), signature), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/orders?id=%s&signature=%s", adapter.httpAddress, orderID.String(), base64.StdEncoding.EncodeToString(signature)), nil)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -94,39 +98,55 @@ func (adapter *adapter) RequestCloseOrder(orderID order.ID, signature string) er
 		return nil
 	}
 
-	return fmt.Errorf("Unexpected status code %d", status)
+	return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 }
 
 func (adapter *adapter) ListOrders() ([]order.ID, []string, []uint8, error) {
-	limit, error := adapter.orderbookContract.GetOrdersCount(*bin.CallOpts{})
+	numOrdersBig, err := adapter.orderbookContract.OrdersCount(&bind.CallOpts{})
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	numOrders := numOrdersBig.Int64()
+	orderIDs := make([]order.ID, 0, numOrders)
+	addresses := make([]string, 0, numOrders)
+	statuses := make([]uint8, 0, numOrders)
 
-	// TODO: GetOrders will be updated to expect settlement id as the first
-	// parameter.
-	orderIds, addresses, statuses, err := adapter.orderbookContract.GetOrders(*bind.CallOpts{}, big.NewInt(0), limit)
-	if err != nil {
-		return nil, nil, nil, err
+	// Get the first 500 orders
+	start := big.NewInt(0)
+	orderIDValues, addressValues, statusValues, err := adapter.orderbookContract.GetOrders(&bind.CallOpts{}, start, big.NewInt(500))
+
+	// Loop until all darknode have been loaded
+	for {
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		for i := range orderIDValues {
+			if bytes.Equal(addressValues[i].Bytes(), []byte{}) {
+				// We are finished when a nil address is returned
+				return orderIDs, addresses, statuses, nil
+			}
+			orderIDs = append(orderIDs, order.ID(orderIDValues[i]))
+			addresses = append(addresses, addressValues[i].Hex())
+			statuses = append(statuses, statusValues[i])
+		}
+		start = start.Add(start, big.NewInt(500))
+		orderIDValues, addressValues, statusValues, err = adapter.orderbookContract.GetOrders(&bind.CallOpts{}, start, big.NewInt(500))
+		if err != nil {
+			return nil, nil, nil, err
+		}
 	}
-
-	addressStrings := []string{}
-	for _, address := range addresses {
-		addressStrings = append(addressStrings, address.String())
-	}
-
-	return []order.ID{orderIds}, addressStrings, statuses, nil
 }
 
 func (adapter *adapter) Sign(data []byte) ([]byte, error) {
 	return adapter.trader.Sign(data)
 }
 
-func (adapter *adapter) buildOrderMapping(order order.Order, signature string) (httpadapter.OrderFragmentMapping, error) {
+func (adapter *adapter) buildOrderMapping(order order.Order, signature []byte) (httpadapter.OrderFragmentMapping, error) {
 	pods, err := adapter.pods()
 	if err != nil {
 		return nil, err
 	}
+
 	orderFragmentMapping := httpadapter.OrderFragmentMapping{}
 
 	for _, pod := range pods {
@@ -143,13 +163,17 @@ func (adapter *adapter) buildOrderMapping(order order.Order, signature string) (
 				Index: int64(i + 1),
 			}
 
-			pubKey, err := adapter.PublicKey(pod.Darknodes[i])
+			pubKeyBytes, err := adapter.darknodeRegistryContract.GetDarknodePublicKey(&bind.CallOpts{}, common.BytesToAddress(pod.Darknodes[i].Hash()))
+			if err != nil {
+				return nil, err
+			}
+			pubKey, err := crypto.RsaPublicKeyFromBytes(pubKeyBytes)
 			if err != nil {
 				return nil, err
 			}
 
 			encryptedFragment, err := ordFragment.Encrypt(pubKey)
-			marshaledOrdFragment.OrderSignature = signature
+			marshaledOrdFragment.OrderSignature = base64.StdEncoding.EncodeToString(signature)
 			marshaledOrdFragment.ID = base64.StdEncoding.EncodeToString(encryptedFragment.ID[:])
 			marshaledOrdFragment.OrderID = base64.StdEncoding.EncodeToString(encryptedFragment.OrderID[:])
 			marshaledOrdFragment.OrderParity = encryptedFragment.OrderParity
@@ -175,4 +199,94 @@ func (adapter *adapter) buildOrderMapping(order order.Order, signature string) (
 	}
 
 	return orderFragmentMapping, nil
+}
+
+func (adapter *adapter) pods() ([]registry.Pod, error) {
+	epoch, err := adapter.darknodeRegistryContract.CurrentEpoch(&bind.CallOpts{})
+	if err != nil {
+		return []registry.Pod{}, err
+	}
+
+	darknodeAddrs, err := adapter.darknodes()
+	if err != nil {
+		return []registry.Pod{}, err
+	}
+
+	numberOfNodesInPod, err := adapter.darknodeRegistryContract.MinimumPodSize(&bind.CallOpts{})
+	if err != nil {
+		return []registry.Pod{}, err
+	}
+	if len(darknodeAddrs) < int(numberOfNodesInPod.Int64()) {
+		return []registry.Pod{}, fmt.Errorf("degraded pod: expected at least %v addresses, got %v", int(numberOfNodesInPod.Int64()), len(darknodeAddrs))
+	}
+
+	numberOfDarknodes := big.NewInt(int64(len(darknodeAddrs)))
+	x := big.NewInt(0).Mod(epoch.Epochhash, numberOfDarknodes)
+	positionInOcean := make([]int, len(darknodeAddrs))
+	for i := 0; i < len(darknodeAddrs); i++ {
+		positionInOcean[i] = -1
+	}
+	pods := make([]registry.Pod, (len(darknodeAddrs) / int(numberOfNodesInPod.Int64())))
+	for i := 0; i < len(darknodeAddrs); i++ {
+		isRegistered, err := adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
+		if err != nil {
+			return []registry.Pod{}, err
+		}
+		for !isRegistered || positionInOcean[x.Int64()] != -1 {
+			x.Add(x, big.NewInt(1))
+			x.Mod(x, numberOfDarknodes)
+			isRegistered, err = adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
+			if err != nil {
+				return []registry.Pod{}, err
+			}
+		}
+		positionInOcean[x.Int64()] = i
+		podID := i % (len(darknodeAddrs) / int(numberOfNodesInPod.Int64()))
+		pods[podID].Darknodes = append(pods[podID].Darknodes, darknodeAddrs[x.Int64()])
+		x.Mod(x.Add(x, epoch.Epochhash), numberOfDarknodes)
+	}
+
+	for i := range pods {
+		hashData := [][]byte{}
+		for _, darknodeAddr := range pods[i].Darknodes {
+			hashData = append(hashData, darknodeAddr.ID())
+		}
+		copy(pods[i].Hash[:], crypto.Keccak256(hashData...))
+		pods[i].Position = i
+	}
+	return pods, nil
+}
+
+func (adapter *adapter) darknodes() (identity.Addresses, error) {
+	numDarknodesBig, err := adapter.darknodeRegistryContract.NumDarknodes(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	numDarknodes := numDarknodesBig.Int64()
+	darknodes := make(identity.Addresses, 0, numDarknodes)
+
+	// Get the first 20 pods worth of darknodes
+	nilValue := common.HexToAddress("0x0000000000000000000000000000000000000000")
+	values, err := adapter.darknodeRegistryContract.GetDarknodes(&bind.CallOpts{}, nilValue, big.NewInt(480))
+
+	// Loop until all darknode have been loaded
+	for {
+		if err != nil {
+			return nil, err
+		}
+		for _, value := range values {
+			if bytes.Equal(value.Bytes(), nilValue.Bytes()) {
+				// We are finished when a nil address is returned
+				return darknodes, nil
+			}
+			darknodes = append(darknodes, identity.Address(value.Bytes()))
+		}
+		lastValue := values[len(values)-1]
+		values, err = adapter.darknodeRegistryContract.GetDarknodes(&bind.CallOpts{}, lastValue, big.NewInt(480))
+		if err != nil {
+			return nil, err
+		}
+		// Skip the first value returned so that we do not duplicate values
+		values = values[1:]
+	}
 }
