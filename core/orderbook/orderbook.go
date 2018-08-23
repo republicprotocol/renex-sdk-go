@@ -9,15 +9,14 @@ import (
 type service struct {
 	orderbook.Adapter
 }
-
-type Service interface {
+type Orderbook interface {
 	OpenOrder(order order.Order) error
 	CloseOrder(orderID order.ID) error
 	ListOrdersByTrader(address string) ([]order.ID, error)
 	ListOrdersByStatus(status uint8) ([]order.ID, error)
 }
 
-func NewService(adapter orderbook.Adapter) Service {
+func NewService(adapter orderbook.Adapter) Orderbook {
 	return &service{
 		adapter,
 	}
@@ -30,7 +29,7 @@ func (service *service) OpenOrder(order order.Order) error {
 	if err != nil {
 		return err
 	}
-	return service.RequestOpenOrder(order, trader)
+	return service.RequestOpenOrder(order, signature)
 }
 
 func (service *service) CloseOrder(orderID order.ID) error {
@@ -40,7 +39,7 @@ func (service *service) CloseOrder(orderID order.ID) error {
 	if err != nil {
 		return err
 	}
-	return service.RequestCloseOrder(order, trader)
+	return service.RequestCloseOrder(orderID, signature)
 }
 
 func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, error) {
@@ -57,7 +56,7 @@ func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, er
 	return orderList, nil
 }
 
-func (service *service) ListOrdersByStatus(status uint8) error {
+func (service *service) ListOrdersByStatus(status uint8) ([]order.ID, error) {
 	orderIds, _, statuses, err := service.ListOrders()
 	if err != nil {
 		return nil, err
