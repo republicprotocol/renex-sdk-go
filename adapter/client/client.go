@@ -1,8 +1,10 @@
-package ethclient
+package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"time"
 
@@ -21,6 +23,7 @@ type Client interface {
 	DarknodeRegistryAddress() common.Address
 	RenExBalancesAddress() common.Address
 	RenExTokensAddress() common.Address
+	WaitTillMined(ctx context.Context, tx *types.Transaction) (*types.Receipt, error)
 }
 
 type Network struct {
@@ -42,10 +45,21 @@ type client struct {
 }
 
 // NewClient creates a new ethereum client.
-func NewClient(network Network) (Client, error) {
+func NewClient(path string) (Client, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var network Network
+
+	if err := json.Unmarshal(data, &network); err != nil {
+		return nil, err
+	}
+
 	ethclient, err := ethclient.Dial(network.URL)
 	if err != nil {
-		return client{}, err
+		return nil, err
 	}
 
 	return &client{
@@ -89,16 +103,16 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value int6
 	if err != nil {
 		return err
 	}
-	_, err = b.PatchedWaitMined(context.Background(), tx)
+	_, err = b.WaitTillMined(context.Background(), tx)
 	return err
 }
 
-// PatchedWaitMined waits for tx to be mined on the blockchain.
+// WaitTillMined waits for tx to be mined on the blockchain.
 // It stops waiting when the context is canceled.
 //
 // TODO: THIS DOES NOT WORK WITH PARITY, WHICH SENDS A TRANSACTION RECEIPT UPON
 // RECEIVING A TX, NOT AFTER IT'S MINED
-func (b *client) PatchedWaitMined(ctx context.Context, tx *types.Transaction) (*types.Receipt, error) {
+func (b *client) WaitTillMined(ctx context.Context, tx *types.Transaction) (*types.Receipt, error) {
 	switch b.network {
 	case "ganache":
 		time.Sleep(100 * time.Millisecond)
