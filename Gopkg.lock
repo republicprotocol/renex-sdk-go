@@ -123,7 +123,7 @@
     "httpadapter",
     "ingress"
   ]
-  revision = "c3d33f8fd220f8341fb798813e1fb0b134576c43"
+  revision = "595825b9066e826fc8f713b5caa6715af5d7b0eb"
 
 [[projects]]
   branch = "contract-upgrades"
