@@ -1,13 +1,17 @@
 package orderbook
 
 import (
-	"github.com/republicprotocol/renex-sdk-go/adapter/orderbook"
-	"github.com/republicprotocol/republic-go/crypto"
 	"github.com/republicprotocol/republic-go/order"
 )
 
 type service struct {
-	orderbook.Adapter
+	Adapter
+}
+
+type Adapter interface {
+	RequestOpenOrder(order order.Order) error
+	RequestCloseOrder(orderID order.ID) error
+	ListOrders() ([]order.ID, []string, []uint8, error)
 }
 type Orderbook interface {
 	OpenOrder(order order.Order) error
@@ -16,30 +20,18 @@ type Orderbook interface {
 	ListOrdersByStatus(status uint8) ([]order.ID, error)
 }
 
-func NewService(adapter orderbook.Adapter) Orderbook {
+func NewService(adapter Adapter) Orderbook {
 	return &service{
 		adapter,
 	}
 }
 
 func (service *service) OpenOrder(order order.Order) error {
-	signatureData := crypto.Keccak256([]byte("Republic Protocol: open: "), order.ID[:])
-	signatureData = crypto.Keccak256([]byte("\x19Ethereum Signed Message:\n32"), signatureData)
-	signature, err := service.Sign(signatureData)
-	if err != nil {
-		return err
-	}
-	return service.RequestOpenOrder(order, signature)
+	return service.RequestOpenOrder(order)
 }
 
 func (service *service) CloseOrder(orderID order.ID) error {
-	signatureData := crypto.Keccak256([]byte("Republic Protocol: close: "), orderID[:])
-	signatureData = crypto.Keccak256([]byte("\x19Ethereum Signed Message:\n32"), signatureData)
-	signature, err := service.Sign(signatureData)
-	if err != nil {
-		return err
-	}
-	return service.RequestCloseOrder(orderID, signature)
+	return service.RequestCloseOrder(orderID)
 }
 
 func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, error) {

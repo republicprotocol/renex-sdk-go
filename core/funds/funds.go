@@ -12,15 +12,20 @@ type service struct {
 }
 
 type Adapter interface {
+	RequestLockedBalance(tokenCode uint32) (*big.Int, error)
+	RequestBalance(tokenCode uint32) (*big.Int, error)
 	RequestDeposit(tokenCode uint32, value *big.Int) error
 	RequestWithdrawalSignature(tokenCode uint32, value *big.Int) ([]byte, error)
 	RequestWithdrawalWithSignature(tokenCode uint32, value *big.Int, signature []byte) error
 	RequestWithdrawalFailSafe(tokenCode uint32, value *big.Int) error
 	RequestWithdrawalFailSafeTrigger(tokenCode uint32) (*IdempotentKey, error)
+	OpenOrdersExist(tokenCode uint32) (bool, error)
 	CheckStatus(key *IdempotentKey) uint8
 }
 
 type Funds interface {
+	Balance(token uint32) (*big.Int, error)
+	UsableBalance(token uint32) (*big.Int, error)
 	Deposit(token uint32, value *big.Int) error
 	Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error)
 }
@@ -32,6 +37,13 @@ func NewService(adapter Adapter) Funds {
 }
 
 func (service *service) Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error) {
+	exists, err := service.OpenOrdersExist(token)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, fmt.Errorf("Withdrawal failed due to the existance of pending orders")
+	}
 	switch service.CheckStatus(key) {
 	case 0:
 		sig, err := service.RequestWithdrawalSignature(token, value)
@@ -59,4 +71,22 @@ func (service *service) Withdraw(token uint32, value *big.Int, forced bool, key 
 
 func (service *service) Deposit(tokenCode uint32, value *big.Int) error {
 	return service.RequestDeposit(tokenCode, value)
+}
+
+func (service *service) UsableBalance(tokenCode uint32) (*big.Int, error) {
+	balance, err := service.RequestBalance(tokenCode)
+	if err != nil {
+		return nil, err
+	}
+
+	lockedBalance, err := service.RequestLockedBalance(tokenCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return balance.Sub(balance, lockedBalance), nil
+}
+
+func (service *service) Balance(tokenCode uint32) (*big.Int, error) {
+	return service.Balance(tokenCode)
 }
