@@ -12,6 +12,8 @@ type service struct {
 }
 
 type Adapter interface {
+	Address() string
+	Transfer(address string, token uint32, value *big.Int) error
 	RequestLockedBalance(tokenCode uint32) (*big.Int, error)
 	RequestBalance(tokenCode uint32) (*big.Int, error)
 	RequestDeposit(tokenCode uint32, value *big.Int) error
@@ -24,6 +26,8 @@ type Adapter interface {
 }
 
 type Funds interface {
+	Address() string
+	Transfer(address string, token uint32, value *big.Int) error
 	Balance(token uint32) (*big.Int, error)
 	UsableBalance(token uint32) (*big.Int, error)
 	Deposit(token uint32, value *big.Int) error
