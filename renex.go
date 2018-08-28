@@ -3,7 +3,9 @@ package renex
 import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	fundsAdapter "github.com/republicprotocol/renex-sdk-go/adapter/funds"
+	"github.com/republicprotocol/renex-sdk-go/adapter/leveldb"
 	obAdapter "github.com/republicprotocol/renex-sdk-go/adapter/orderbook"
+	"github.com/republicprotocol/renex-sdk-go/adapter/store"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
@@ -15,7 +17,7 @@ type RenEx struct {
 	funds.Funds
 }
 
-func NewRenEx(ingressAddress, configPath, keystorePath, passphrase string) (RenEx, error) {
+func NewRenEx(ldbLocation, ingressAddress, configPath, keystorePath, passphrase string) (RenEx, error) {
 	newTrader, err := trader.NewTrader(keystorePath, passphrase)
 	if err != nil {
 		return RenEx{}, err
@@ -26,18 +28,30 @@ func NewRenEx(ingressAddress, configPath, keystorePath, passphrase string) (RenE
 		return RenEx{}, err
 	}
 
-	fAdapter, err := fundsAdapter.NewAdapter(ingressAddress, newClient, newTrader)
+	newStoreAdapter, err := leveldb.NewLDBStore(ldbLocation)
 	if err != nil {
 		return RenEx{}, err
 	}
 
-	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, newTrader)
+	newStore := store.NewStore(newStoreAdapter)
+	if err != nil {
+		return RenEx{}, err
+	}
+
+	fAdapter, err := fundsAdapter.NewAdapter(ingressAddress, newClient, newTrader, newStore)
+	if err != nil {
+		return RenEx{}, err
+	}
+
+	fService := funds.NewService(fAdapter)
+
+	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, newTrader, fService)
 	if err != nil {
 		return RenEx{}, err
 	}
 
 	return RenEx{
 		orderbook.NewService(oAdapter),
-		funds.NewService(fAdapter),
+		fService,
 	}, nil
 }
