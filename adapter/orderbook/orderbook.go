@@ -2,9 +2,11 @@ package orderbook
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 
@@ -15,6 +17,8 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
+	"github.com/republicprotocol/renex-sdk-go/core/funds"
+	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
 	"github.com/republicprotocol/republic-go/crypto"
 	"github.com/republicprotocol/republic-go/identity"
 	"github.com/republicprotocol/republic-go/order"
@@ -26,18 +30,11 @@ type adapter struct {
 	orderbookContract        *bindings.Orderbook
 	darknodeRegistryContract *bindings.DarknodeRegistry
 	trader                   trader.Trader
+	client                   client.Client
+	funds                    funds.Funds
 }
 
-type Adapter interface {
-	RequestOpenOrder(order order.Order, signature []byte) error
-	RequestCloseOrder(orderID order.ID, signature []byte) error
-
-	ListOrders() ([]order.ID, []string, []uint8, error)
-
-	Sign([]byte) ([]byte, error)
-}
-
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) (Adapter, error) {
+func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds) (orderbook.Adapter, error) {
 	orderbook, err := bindings.NewOrderbook(client.OrderbookAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
@@ -50,17 +47,25 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) 
 		orderbookContract:        orderbook,
 		darknodeRegistryContract: darknodeRegistry,
 		httpAddress:              httpAddress,
+		trader:                   trader,
+		client:                   client,
+		funds:                    funds,
 	}, nil
 }
 
-func (adapter *adapter) RequestOpenOrder(order order.Order, signature []byte) error {
-	mapping, err := adapter.buildOrderMapping(order, signature)
+func (adapter *adapter) RequestOpenOrder(order order.Order) error {
+	balance, err := adapter.funds.UsableBalance(getTokenCode(order))
+	if balance.Uint64() < order.Volume {
+		return fmt.Errorf("Order volume exceeded usable balance")
+	}
+
+	mapping, err := adapter.buildOrderMapping(order)
 	if err != nil {
 		return err
 	}
 
+	// TODO: Match the ingress http adapter interface
 	req := httpadapter.OpenOrderRequest{
-		Signature:             base64.StdEncoding.EncodeToString(signature),
 		OrderFragmentMappings: []httpadapter.OrderFragmentMapping{mapping},
 	}
 
@@ -76,29 +81,52 @@ func (adapter *adapter) RequestOpenOrder(order order.Order, signature []byte) er
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
-		return nil
-	}
-
-	return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
-}
-
-func (adapter *adapter) RequestCloseOrder(orderID order.ID, signature []byte) error {
-
-	client := http.Client{}
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/orders?id=%s&signature=%s", adapter.httpAddress, orderID.String(), base64.StdEncoding.EncodeToString(signature)), nil)
-
-	resp, err := client.Do(req)
+	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
-		return nil
+	type Response struct {
+		Signature string `json:"signature"`
 	}
 
-	return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
+	respose := Response{}
+	if err := json.Unmarshal(respBytes, respose); err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
+	}
+
+	sigBytes, err := base64.StdEncoding.DecodeString(respose.Signature)
+	if err != nil {
+		return err
+	}
+
+	tx, err := adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
+	if err != nil {
+		return err
+	}
+
+	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (adapter *adapter) RequestCloseOrder(orderID order.ID) error {
+	tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
+	if err != nil {
+		return err
+	}
+
+	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (adapter *adapter) ListOrders() ([]order.ID, []string, []uint8, error) {
@@ -141,7 +169,11 @@ func (adapter *adapter) Sign(data []byte) ([]byte, error) {
 	return adapter.trader.Sign(data)
 }
 
-func (adapter *adapter) buildOrderMapping(order order.Order, signature []byte) (httpadapter.OrderFragmentMapping, error) {
+func (adapter *adapter) Address() []byte {
+	return adapter.trader.Address().Bytes()
+}
+
+func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderFragmentMapping, error) {
 	pods, err := adapter.pods()
 	if err != nil {
 		return nil, err
@@ -173,7 +205,6 @@ func (adapter *adapter) buildOrderMapping(order order.Order, signature []byte) (
 			}
 
 			encryptedFragment, err := ordFragment.Encrypt(pubKey)
-			marshaledOrdFragment.OrderSignature = base64.StdEncoding.EncodeToString(signature)
 			marshaledOrdFragment.ID = base64.StdEncoding.EncodeToString(encryptedFragment.ID[:])
 			marshaledOrdFragment.OrderID = base64.StdEncoding.EncodeToString(encryptedFragment.OrderID[:])
 			marshaledOrdFragment.OrderParity = encryptedFragment.OrderParity
@@ -289,4 +320,11 @@ func (adapter *adapter) darknodes() (identity.Addresses, error) {
 		// Skip the first value returned so that we do not duplicate values
 		values = values[1:]
 	}
+}
+
+func getTokenCode(ord order.Order) uint32 {
+	if ord.Parity == 0 {
+		return uint32(ord.Tokens.PriorityToken())
+	}
+	return uint32(ord.Tokens.NonPriorityToken())
 }
