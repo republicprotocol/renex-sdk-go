@@ -1,6 +1,9 @@
 package renex
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	fundsAdapter "github.com/republicprotocol/renex-sdk-go/adapter/funds"
 	"github.com/republicprotocol/renex-sdk-go/adapter/leveldb"
@@ -17,18 +20,19 @@ type RenEx struct {
 	funds.Funds
 }
 
-func NewRenEx(ldbLocation, ingressAddress, configPath, keystorePath, passphrase string) (RenEx, error) {
+func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
+	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 	newTrader, err := trader.NewTrader(keystorePath, passphrase)
 	if err != nil {
 		return RenEx{}, err
 	}
 
-	newClient, err := client.NewClient(configPath)
+	newClient, err := client.NewClient(network)
 	if err != nil {
 		return RenEx{}, err
 	}
 
-	newStoreAdapter, err := leveldb.NewLDBStore(ldbLocation)
+	newStoreAdapter, err := leveldb.NewLDBStore(os.Getenv("HOME") + "/.renex/db")
 	if err != nil {
 		return RenEx{}, err
 	}

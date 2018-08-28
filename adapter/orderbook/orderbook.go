@@ -64,8 +64,8 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	// TODO: Match the ingress http adapter interface
 	req := httpadapter.OpenOrderRequest{
+		Address:               adapter.trader.Address().String(),
 		OrderFragmentMappings: []httpadapter.OrderFragmentMapping{mapping},
 	}
 

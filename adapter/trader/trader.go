@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"crypto/ecdsa"
 	"crypto/rand"
 	"io/ioutil"
 	"os"
@@ -8,10 +9,11 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/republicprotocol/republic-go/crypto"
 )
 
 type trader struct {
-	*keystore.Key
+	*ecdsa.PrivateKey
 }
 
 // Trader represents an individual entity that opens orders.
@@ -24,6 +26,7 @@ type Trader interface {
 }
 
 func NewTrader(path string, passphrase string) (Trader, error) {
+	ks := crypto.Keystore{}
 	keyin, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -32,12 +35,17 @@ func NewTrader(path string, passphrase string) (Trader, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := keystore.DecryptKey(json, passphrase)
-	if err != nil {
-		return nil, err
+	if err := ks.DecryptFromJSON(json, passphrase); err != nil {
+		key, err := keystore.DecryptKey(json, passphrase)
+		if err != nil {
+			return nil, err
+		}
+		return &trader{
+			key.PrivateKey,
+		}, nil
 	}
 	return &trader{
-		key,
+		ks.EcdsaKey.PrivateKey,
 	}, nil
 }
 
@@ -46,7 +54,7 @@ func (t *trader) TransactOpts() *bind.TransactOpts {
 }
 
 func (t *trader) Address() common.Address {
-	return t.Key.Address
+	return bind.NewKeyedTransactor(t.PrivateKey).From
 }
 
 func (t *trader) Sign(data []byte) ([]byte, error) {

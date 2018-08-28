@@ -2,9 +2,7 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"time"
 
@@ -44,16 +42,44 @@ type client struct {
 	renExTokens      common.Address
 }
 
-// NewClient creates a new ethereum client.
-func NewClient(path string) (Client, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
+func GetNetwork(network string) (Network, error) {
+	switch network {
+	case "testnet":
+		return Network{
+			URL:                     "https://kovan.infura.io",
+			Chain:                   "kovan",
+			OrderbookAddress:        "",
+			DarknodeRegistryAddress: "",
+			RenExBalancesAddress:    "",
+			RenExTokensAddress:      "",
+		}, nil
+	case "falcon":
+		return Network{
+			URL:                     "https://kovan.infura.io",
+			Chain:                   "kovan",
+			OrderbookAddress:        "",
+			DarknodeRegistryAddress: "",
+			RenExBalancesAddress:    "",
+			RenExTokensAddress:      "",
+		}, nil
+	case "nightly":
+		return Network{
+			URL:                     "https://kovan.infura.io",
+			Chain:                   "kovan",
+			OrderbookAddress:        "",
+			DarknodeRegistryAddress: "",
+			RenExBalancesAddress:    "",
+			RenExTokensAddress:      "",
+		}, nil
+	default:
+		return Network{}, fmt.Errorf("Unknown Network")
 	}
+}
 
-	var network Network
-
-	if err := json.Unmarshal(data, &network); err != nil {
+// NewClient creates a new ethereum client.
+func NewClient(net string) (Client, error) {
+	network, err := GetNetwork(net)
+	if err != nil {
 		return nil, err
 	}
 
