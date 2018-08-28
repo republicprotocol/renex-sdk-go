@@ -30,12 +30,12 @@
   version = "1.8.12"
 
 [[constraint]]
-  branch = "master"
+  branch = "contract-upgrades"
   name = "github.com/republicprotocol/republic-go"
   source = "https://github.com/republicprotocol/republic-go.git"
 
 [[constraint]]
-  branch = "master"
+  branch = "contract-upgrades"
   name = "github.com/republicprotocol/renex-ingress-go"
   source = "https://github.com/republicprotocol/renex-ingress-go.git"
 

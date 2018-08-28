@@ -105,10 +105,10 @@
   revision = "d6ad8896def6b8571037683cffd995e3a87b14fa"
 
 [[projects]]
+  branch = "master"
   name = "github.com/multiformats/go-multihash"
   packages = ["."]
-  revision = "8be2a682ab9f254311de1375145a2f78a809b07d"
-  version = "v1.0.8"
+  revision = "bffb9dfeaca3b66c0accb675d2910407f3615eec"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -117,20 +117,20 @@
   version = "v1.1"
 
 [[projects]]
-  branch = "master"
+  branch = "contract-upgrades"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress"
   ]
-  revision = "aefdb32132c3a17047c4199abb3319e90eb15ccf"
+  revision = "c3d33f8fd220f8341fb798813e1fb0b134576c43"
+  source = "https://github.com/republicprotocol/renex-ingress-go.git"
 
 [[projects]]
-  branch = "master"
+  branch = "contract-upgrades"
   name = "github.com/republicprotocol/republic-go"
   packages = [
     "crypto",
-    "dht",
     "dispatch",
     "identity",
     "logger",
@@ -142,7 +142,8 @@
     "stackint/asm",
     "swarm"
   ]
-  revision = "77302277f12408432c69881c8b9a7faa14b2410e"
+  revision = "d70f8b788f8dfb58b2a0cd96413154df3d9393aa"
+  source = "https://github.com/republicprotocol/republic-go.git"
 
 [[projects]]
   name = "github.com/rjeczalik/notify"
@@ -238,6 +239,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f808b536a084d80326f8b685c77deb6712d5acaf79097400921d446d14e4b3a2"
+  inputs-digest = "4a3082f4256a9c13a9fbce818d6d110ac1f71009e519ea01189439da65f0b80c"
   solver-name = "gps-cdcl"
   solver-version = 1
