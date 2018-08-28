@@ -12,6 +12,7 @@ import (
 
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
+	"github.com/republicprotocol/renex-sdk-go/adapter/store"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
 )
@@ -22,9 +23,10 @@ type adapter struct {
 	client                client.Client
 	trader                trader.Trader
 	httpAddress           string
+	store.Store
 }
 
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) (funds.Adapter, error) {
+func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, store store.Store) (funds.Adapter, error) {
 	renExBalances, err := bindings.NewRenExBalances(client.RenExBalancesAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
@@ -38,6 +40,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader) 
 		renExTokensContract:   renExTokens,
 		httpAddress:           httpAddress,
 		trader:                trader,
+		Store:                 store,
 	}, nil
 }
 
@@ -195,6 +198,19 @@ func (adapter *adapter) CheckStatus(key *funds.IdempotentKey) uint8 {
 	}
 
 	return uint8(2)
+}
+
+func (adapter *adapter) RequestBalance(tokenCode uint32) (*big.Int, error) {
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Registered {
+		return nil, fmt.Errorf("Unregistered token")
+	}
+
+	return adapter.renExBalancesContract.TraderBalances(&bind.CallOpts{}, adapter.trader.Address(), token.Addr)
 }
 
 func toBytes32(b []byte) ([32]byte, error) {
