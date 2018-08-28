@@ -124,7 +124,6 @@
     "ingress"
   ]
   revision = "c3d33f8fd220f8341fb798813e1fb0b134576c43"
-  source = "https://github.com/republicprotocol/renex-ingress-go.git"
 
 [[projects]]
   branch = "contract-upgrades"
@@ -143,7 +142,6 @@
     "swarm"
   ]
   revision = "d70f8b788f8dfb58b2a0cd96413154df3d9393aa"
-  source = "https://github.com/republicprotocol/republic-go.git"
 
 [[projects]]
   name = "github.com/rjeczalik/notify"
@@ -239,6 +237,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a3082f4256a9c13a9fbce818d6d110ac1f71009e519ea01189439da65f0b80c"
+  inputs-digest = "f853fd927ca0571bf89371371c222c5799a3de853a21b29b3d5c43d62a98c116"
   solver-name = "gps-cdcl"
   solver-version = 1
