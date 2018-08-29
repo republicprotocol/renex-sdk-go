@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -67,6 +68,10 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	data, err := store.Read([]byte("ORDERS"))
 	if err != nil {
 		return nil, err
+	}
+
+	if bytes.Compare(data, []byte{}) == 0 {
+		return []order.Order{}, nil
 	}
 
 	orderList := orders{}
