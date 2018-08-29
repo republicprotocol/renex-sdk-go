@@ -29,6 +29,7 @@ type adapter struct {
 	httpAddress              string
 	orderbookContract        *bindings.Orderbook
 	darknodeRegistryContract *bindings.DarknodeRegistry
+	renexSettlementContract  *bindings.RenExSettlement
 	trader                   trader.Trader
 	client                   client.Client
 	funds                    funds.Funds
@@ -116,7 +117,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	return nil
 }
 
-func (adapter *adapter) RequestCloseOrder(orderID order.ID) error {
+func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
 	tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
 	if err != nil {
 		return err
@@ -171,6 +172,21 @@ func (adapter *adapter) Sign(data []byte) ([]byte, error) {
 
 func (adapter *adapter) Address() []byte {
 	return adapter.trader.Address().Bytes()
+}
+
+// Status(order.ID) (order.Status, error)
+// GetMatchDetails(id order.ID) ([32]byte, [32]byte, *big.Int, *big.Int, uint32, uint32, error)
+
+func (adapter *adapter) Status(id order.ID) (order.Status, error) {
+	return adapter.orderbookContract.OrderState(&bind.CallOpts{}, id)
+}
+
+func (adapter *adapter) Settled(id order.ID) (bool, error) {
+	det, err := adapter.renexSettlementContract.GetMatchDetails(&bind.CallOpts{}, id)
+	if err != nil {
+		return false, err
+	}
+	return det.Settled, nil
 }
 
 func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderFragmentMapping, error) {

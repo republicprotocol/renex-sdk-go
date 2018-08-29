@@ -22,6 +22,7 @@ type Client interface {
 	RenExBalancesAddress() common.Address
 	RenExTokensAddress() common.Address
 	WaitTillMined(ctx context.Context, tx *types.Transaction) (*types.Receipt, error)
+	Transfer(to common.Address, from *bind.TransactOpts, value *big.Int) error
 }
 
 type Network struct {
@@ -108,16 +109,16 @@ func (b *client) NewAccount(value int64, from *bind.TransactOpts) (common.Addres
 	accountAddress := crypto.PubkeyToAddress(account.PublicKey)
 	accountAuth := bind.NewKeyedTransactor(account)
 
-	return accountAddress, accountAuth, b.Transfer(accountAddress, from, value)
+	return accountAddress, accountAuth, b.Transfer(accountAddress, from, big.NewInt(value))
 }
 
 // Transfer is a helper function for sending ETH to an address
-func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value int64) error {
+func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big.Int) error {
 	transactor := &bind.TransactOpts{
 		From:     from.From,
 		Nonce:    from.Nonce,
 		Signer:   from.Signer,
-		Value:    big.NewInt(value),
+		Value:    value,
 		GasPrice: from.GasPrice,
 		GasLimit: 30000,
 		Context:  from.Context,

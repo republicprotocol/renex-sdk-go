@@ -213,6 +213,37 @@ func (adapter *adapter) RequestBalance(tokenCode uint32) (*big.Int, error) {
 	return adapter.renExBalancesContract.TraderBalances(&bind.CallOpts{}, adapter.trader.Address(), token.Addr)
 }
 
+func (adapter *adapter) Address() string {
+	return adapter.trader.Address().String()
+}
+
+func (adapter *adapter) TransferEth(address string, value *big.Int) error {
+	return adapter.client.Transfer(common.HexToAddress(address), adapter.trader.TransactOpts(), value)
+}
+
+func (adapter *adapter) TransferERC20(address string, tokenCode uint32, value *big.Int) error {
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	if err != nil {
+		return err
+	}
+
+	erc20, err := bindings.NewERC20(token.Addr, bind.ContractBackend(adapter.client.Client()))
+	if err != nil {
+		return err
+	}
+
+	tx, err := erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
+	if err != nil {
+		return err
+	}
+
+	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func toBytes32(b []byte) ([32]byte, error) {
 	bytes32 := [32]byte{}
 	if len(b) != 32 {
