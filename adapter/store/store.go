@@ -23,15 +23,15 @@ type StoreAdapter interface {
 }
 
 type Store interface {
-	RequestLockedBalance(uint32) (*big.Int, error)
-	OpenOrdersExist(uint32) (bool, error)
+	RequestLockedBalance(order.Token) (*big.Int, error)
+	OpenOrdersExist(order.Token) (bool, error)
 }
 
 func NewStore(adapter StoreAdapter) Store {
 	return &store{}
 }
 
-func (store *store) RequestLockedBalance(tokenCode uint32) (*big.Int, error) {
+func (store *store) RequestLockedBalance(tokenCode order.Token) (*big.Int, error) {
 	ords, err := store.openOrders(tokenCode)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (store *store) RequestLockedBalance(tokenCode uint32) (*big.Int, error) {
 	return big.NewInt(int64(balance)), nil
 }
 
-func (store *store) OpenOrdersExist(tokenCode uint32) (bool, error) {
+func (store *store) OpenOrdersExist(tokenCode order.Token) (bool, error) {
 	orders, err := store.openOrders(tokenCode)
 	if err != nil {
 		return false, err
@@ -51,7 +51,7 @@ func (store *store) OpenOrdersExist(tokenCode uint32) (bool, error) {
 	return len(orders) == 0, nil
 }
 
-func (store *store) openOrders(tokenCode uint32) ([]order.Order, error) {
+func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	data, err := store.Read([]byte("ORDERS"))
 	if err != nil {
 		return nil, err
@@ -140,9 +140,9 @@ func deleteFromList(ids []order.ID, deleteID order.ID) []order.ID {
 	return ids
 }
 
-func checkToken(ord order.Order, tokenCode uint32) bool {
+func checkToken(ord order.Order, tokenCode order.Token) bool {
 	if ord.Parity == 0 {
-		return (uint32(ord.Tokens.PriorityToken()) == tokenCode)
+		return (order.Token(ord.Tokens.PriorityToken()) == tokenCode)
 	}
-	return (uint32(ord.Tokens.NonPriorityToken()) == tokenCode)
+	return (order.Token(ord.Tokens.NonPriorityToken()) == tokenCode)
 }

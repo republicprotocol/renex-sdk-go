@@ -174,9 +174,6 @@ func (adapter *adapter) Address() []byte {
 	return adapter.trader.Address().Bytes()
 }
 
-// Status(order.ID) (order.Status, error)
-// GetMatchDetails(id order.ID) ([32]byte, [32]byte, *big.Int, *big.Int, uint32, uint32, error)
-
 func (adapter *adapter) Status(id order.ID) (order.Status, error) {
 	return adapter.orderbookContract.OrderState(&bind.CallOpts{}, id)
 }
@@ -338,9 +335,9 @@ func (adapter *adapter) darknodes() (identity.Addresses, error) {
 	}
 }
 
-func getTokenCode(ord order.Order) uint32 {
+func getTokenCode(ord order.Order) order.Token {
 	if ord.Parity == 0 {
-		return uint32(ord.Tokens.PriorityToken())
+		return ord.Tokens.PriorityToken()
 	}
-	return uint32(ord.Tokens.NonPriorityToken())
+	return ord.Tokens.NonPriorityToken()
 }

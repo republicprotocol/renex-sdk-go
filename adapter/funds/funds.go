@@ -44,7 +44,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 	}, nil
 }
 
-func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode uint32, value *big.Int, signature []byte) error {
+func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode uint32, value *
 	return nil
 }
 
-func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode uint32) (*funds.IdempotentKey, error) {
+func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*funds.IdempotentKey, error) {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode uint32) (*fun
 	return &key, nil
 }
 
-func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode uint32, value *big.Int) error {
+func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return err
@@ -113,11 +113,11 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode uint32, value *big.I
 	return nil
 }
 
-func (adapter *adapter) RequestWithdrawalSignature(tokenCode uint32, value *big.Int) ([]byte, error) {
+func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error) {
 	return nil, nil
 }
 
-func (adapter *adapter) RequestDeposit(tokenCode uint32, value *big.Int) error {
+func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return err
@@ -200,7 +200,7 @@ func (adapter *adapter) CheckStatus(key *funds.IdempotentKey) uint8 {
 	return uint8(2)
 }
 
-func (adapter *adapter) RequestBalance(tokenCode uint32) (*big.Int, error) {
+func (adapter *adapter) RequestBalance(tokenCode order.Token) (*big.Int, error) {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return nil, err
@@ -221,7 +221,7 @@ func (adapter *adapter) TransferEth(address string, value *big.Int) error {
 	return adapter.client.Transfer(common.HexToAddress(address), adapter.trader.TransactOpts(), value)
 }
 
-func (adapter *adapter) TransferERC20(address string, tokenCode uint32, value *big.Int) error {
+func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
 	if err != nil {
 		return err

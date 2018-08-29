@@ -3,6 +3,8 @@ package funds
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/republicprotocol/republic-go/order"
 )
 
 type IdempotentKey [32]byte
@@ -13,26 +15,26 @@ type service struct {
 
 type Adapter interface {
 	Address() string
-	Balance(tokenCode uint32) (*big.Int, error)
+	Balance(tokenCode order.Token) (*big.Int, error)
 	TransferEth(address string, value *big.Int) error
-	TransferERC20(address string, token uint32, value *big.Int) error
-	RequestLockedBalance(tokenCode uint32) (*big.Int, error)
-	RequestDeposit(tokenCode uint32, value *big.Int) error
-	RequestWithdrawalSignature(tokenCode uint32, value *big.Int) ([]byte, error)
-	RequestWithdrawalWithSignature(tokenCode uint32, value *big.Int, signature []byte) error
-	RequestWithdrawalFailSafe(tokenCode uint32, value *big.Int) error
-	RequestWithdrawalFailSafeTrigger(tokenCode uint32) (*IdempotentKey, error)
-	OpenOrdersExist(tokenCode uint32) (bool, error)
+	TransferERC20(address string, token order.Token, value *big.Int) error
+	RequestLockedBalance(tokenCode order.Token) (*big.Int, error)
+	RequestDeposit(tokenCode order.Token, value *big.Int) error
+	RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error)
+	RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error
+	RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error
+	RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*IdempotentKey, error)
+	OpenOrdersExist(tokenCode order.Token) (bool, error)
 	CheckStatus(key *IdempotentKey) uint8
 }
 
 type Funds interface {
 	Address() string
-	Transfer(address string, token uint32, value *big.Int) error
-	Balance(token uint32) (*big.Int, error)
-	UsableBalance(token uint32) (*big.Int, error)
-	Deposit(token uint32, value *big.Int) error
-	Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error)
+	Transfer(address string, token order.Token, value *big.Int) error
+	Balance(token order.Token) (*big.Int, error)
+	UsableBalance(token order.Token) (*big.Int, error)
+	Deposit(token order.Token, value *big.Int) error
+	Withdraw(token order.Token, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error)
 }
 
 func NewService(adapter Adapter) Funds {
@@ -41,7 +43,7 @@ func NewService(adapter Adapter) Funds {
 	}
 }
 
-func (service *service) Withdraw(token uint32, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error) {
+func (service *service) Withdraw(token order.Token, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error) {
 	exists, err := service.OpenOrdersExist(token)
 	if err != nil {
 		return nil, err
@@ -74,11 +76,11 @@ func (service *service) Withdraw(token uint32, value *big.Int, forced bool, key 
 	}
 }
 
-func (service *service) Deposit(tokenCode uint32, value *big.Int) error {
+func (service *service) Deposit(tokenCode order.Token, value *big.Int) error {
 	return service.RequestDeposit(tokenCode, value)
 }
 
-func (service *service) UsableBalance(tokenCode uint32) (*big.Int, error) {
+func (service *service) UsableBalance(tokenCode order.Token) (*big.Int, error) {
 	balance, err := service.Balance(tokenCode)
 	if err != nil {
 		return nil, err
@@ -92,13 +94,19 @@ func (service *service) UsableBalance(tokenCode uint32) (*big.Int, error) {
 	return balance.Sub(balance, lockedBalance), nil
 }
 
-func (service *service) Transfer(address string, tokenCode uint32, value *big.Int) error {
+func (service *service) Transfer(address string, tokenCode order.Token, value *big.Int) error {
 	switch tokenCode {
-	case 0:
-		return fmt.Errorf("Unsupported Currency")
-	case 1:
+	case order.TokenREN:
+		return service.TransferERC20(address, tokenCode, value)
+	case order.TokenDGX:
+		return service.TransferERC20(address, tokenCode, value)
+	case order.TokenABC:
+		return service.TransferERC20(address, tokenCode, value)
+	case order.TokenXYZ:
+		return service.TransferERC20(address, tokenCode, value)
+	case order.TokenETH:
 		return service.TransferEth(address, value)
 	default:
-		return service.TransferERC20(address, tokenCode, value)
+		return fmt.Errorf("Unsupported Currency")
 	}
 }
