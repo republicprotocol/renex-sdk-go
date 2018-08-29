@@ -13,9 +13,10 @@ type service struct {
 
 type Adapter interface {
 	Address() string
-	Transfer(address string, token uint32, value *big.Int) error
+	Balance(tokenCode uint32) (*big.Int, error)
+	TransferEth(address string, value *big.Int) error
+	TransferERC20(address string, token uint32, value *big.Int) error
 	RequestLockedBalance(tokenCode uint32) (*big.Int, error)
-	RequestBalance(tokenCode uint32) (*big.Int, error)
 	RequestDeposit(tokenCode uint32, value *big.Int) error
 	RequestWithdrawalSignature(tokenCode uint32, value *big.Int) ([]byte, error)
 	RequestWithdrawalWithSignature(tokenCode uint32, value *big.Int, signature []byte) error
@@ -78,7 +79,7 @@ func (service *service) Deposit(tokenCode uint32, value *big.Int) error {
 }
 
 func (service *service) UsableBalance(tokenCode uint32) (*big.Int, error) {
-	balance, err := service.RequestBalance(tokenCode)
+	balance, err := service.Balance(tokenCode)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +92,13 @@ func (service *service) UsableBalance(tokenCode uint32) (*big.Int, error) {
 	return balance.Sub(balance, lockedBalance), nil
 }
 
-func (service *service) Balance(tokenCode uint32) (*big.Int, error) {
-	return service.Balance(tokenCode)
+func (service *service) Transfer(address string, tokenCode uint32, value *big.Int) error {
+	switch tokenCode {
+	case 0:
+		return fmt.Errorf("Unsupported Currency")
+	case 1:
+		return service.TransferEth(address, value)
+	default:
+		return service.TransferERC20(address, tokenCode, value)
+	}
 }
