@@ -175,7 +175,8 @@ func (adapter *adapter) Address() []byte {
 }
 
 func (adapter *adapter) Status(id order.ID) (order.Status, error) {
-	return adapter.orderbookContract.OrderState(&bind.CallOpts{}, id)
+	status, err := adapter.orderbookContract.OrderState(&bind.CallOpts{}, id)
+	return order.Status(status), err
 }
 
 func (adapter *adapter) Settled(id order.ID) (bool, error) {

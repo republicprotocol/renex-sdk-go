@@ -15,6 +15,7 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
+	"github.com/republicprotocol/republic-go/order"
 )
 
 type adapter struct {
@@ -45,7 +46,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, va
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*funds.IdempotentKey, error) {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +94,7 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
 	}
@@ -118,7 +119,7 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 }
 
 func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
 	}
@@ -200,8 +201,8 @@ func (adapter *adapter) CheckStatus(key *funds.IdempotentKey) uint8 {
 	return uint8(2)
 }
 
-func (adapter *adapter) RequestBalance(tokenCode order.Token) (*big.Int, error) {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+func (adapter *adapter) Balance(tokenCode order.Token) (*big.Int, error) {
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func (adapter *adapter) TransferEth(address string, value *big.Int) error {
 }
 
 func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, value *big.Int) error {
-	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, tokenCode)
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
 	}
