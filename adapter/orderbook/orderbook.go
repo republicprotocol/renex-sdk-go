@@ -296,6 +296,7 @@ func (adapter *adapter) pods() ([]registry.Pod, error) {
 		if err != nil {
 			return []registry.Pod{}, err
 		}
+		fmt.Println("Waiting for node registration")
 		for !isRegistered || positionInOcean[x.Int64()] != -1 {
 			x.Add(x, big.NewInt(1))
 			x.Mod(x, numberOfDarknodes)
@@ -304,6 +305,7 @@ func (adapter *adapter) pods() ([]registry.Pod, error) {
 				return []registry.Pod{}, err
 			}
 		}
+		fmt.Println("Node registrations complete")
 		positionInOcean[x.Int64()] = i
 		podID := i % (len(darknodeAddrs) / int(numberOfNodesInPod.Int64()))
 		pods[podID].Darknodes = append(pods[podID].Darknodes, darknodeAddrs[x.Int64()])
