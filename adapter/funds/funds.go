@@ -1,15 +1,21 @@
 package funds
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
+	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
@@ -115,7 +121,42 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 }
 
 func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error) {
-	return nil, nil
+	req := httpadapter.ApproveWithdrawalRequest{
+		Trader:  adapter.trader.Address().String(),
+		TokenID: uint32(tokenCode),
+	}
+
+	data, err := json.MarshalIndent(req, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(data)
+
+	resp, err := http.DefaultClient.Post(fmt.Sprintf("%s/withdrawals", adapter.httpAddress), "application/json", buf)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	type Response struct {
+		Signature string `json:"signature"`
+	}
+
+	respose := Response{}
+	if err := json.Unmarshal(respBytes, respose); err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 {
+		return nil, fmt.Errorf("Unexpected status code %d", resp.StatusCode)
+	}
+
+	return base64.StdEncoding.DecodeString(respose.Signature)
 }
 
 func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
