@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
-	"fmt"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -40,20 +39,14 @@ type Trader interface {
 
 func NewTrader(path string, passphrase string) (Trader, error) {
 	ks := crypto.Keystore{}
-
-	fmt.Println("Location ", path)
 	keyin, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Sucessfully opened the file")
-
 	json, err := ioutil.ReadAll(keyin)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Decrypting the json file")
 	if err := ks.DecryptFromJSON(json, passphrase); err != nil {
 		key, err := keystore.DecryptKey(json, passphrase)
 		if err != nil {
