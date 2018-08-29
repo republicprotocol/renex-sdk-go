@@ -58,6 +58,8 @@ func (store *store) OpenOrdersExist(tokenCode order.Token) (bool, error) {
 }
 
 func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
+	store.storeMu.RLock()
+	defer store.storeMu.RUnlock()
 	data, err := store.Read([]byte("ORDERS"))
 	if err != nil {
 		return nil, err
@@ -94,6 +96,8 @@ func (store *store) Order(id order.ID) (order.Order, error) {
 }
 
 func (store *store) AppendOrder(ord order.Order) error {
+	store.storeMu.Lock()
+	defer store.storeMu.Unlock()
 	data, err := json.Marshal(ord)
 	if err != nil {
 		return err
@@ -118,6 +122,8 @@ func (store *store) AppendOrder(ord order.Order) error {
 }
 
 func (store *store) DeleteOrder(id order.ID) error {
+	store.storeMu.Lock()
+	defer store.storeMu.Unlock()
 	if err := store.Delete(append([]byte("ORDER"), id[:]...)); err != nil {
 		return err
 	}
