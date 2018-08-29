@@ -46,11 +46,11 @@ func (store *store) RequestLockedBalance(tokenCode order.Token) (*big.Int, error
 		return nil, err
 	}
 	fmt.Println("Got the open orders")
-	balance := uint64(0)
+	balance := int64(0)
 	for _, ord := range ords {
-		balance += ord.Volume
+		balance += int64(ord.Volume)
 	}
-	return big.NewInt(int64(balance)), nil
+	return big.NewInt(balance), nil
 }
 
 func (store *store) OpenOrdersExist(tokenCode order.Token) (bool, error) {
@@ -66,7 +66,7 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	defer store.storeMu.RUnlock()
 	data, err := store.Read([]byte("ORDERS"))
 	if err != nil {
-		return nil, err
+		return []order.Order{}, nil
 	}
 	fmt.Println("read the open orders")
 	orderList := orders{}
