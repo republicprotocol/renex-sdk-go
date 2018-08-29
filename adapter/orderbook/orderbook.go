@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -299,7 +298,7 @@ func (adapter *adapter) pods() ([]registry.Pod, error) {
 		}
 		fmt.Println("Waiting for node registration")
 		for !isRegistered || positionInOcean[x.Int64()] != -1 {
-			fmt.Println("Is", hex.EncodeToString(darknodeAddrs[x.Int64()].Hash()), "registered:", isRegistered, "position", positionInOcean[x.Int64()])
+			fmt.Println("Is", common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()).String(), "registered:", isRegistered, "position", positionInOcean[x.Int64()])
 			x.Add(x, big.NewInt(1))
 			x.Mod(x, numberOfDarknodes)
 			isRegistered, err = adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
@@ -307,7 +306,7 @@ func (adapter *adapter) pods() ([]registry.Pod, error) {
 				return []registry.Pod{}, err
 			}
 		}
-		fmt.Println("Node registrations complete")
+		fmt.Println("Node registration complete")
 		positionInOcean[x.Int64()] = i
 		podID := i % (len(darknodeAddrs) / int(numberOfNodesInPod.Int64()))
 		pods[podID].Darknodes = append(pods[podID].Darknodes, darknodeAddrs[x.Int64()])
@@ -347,7 +346,7 @@ func (adapter *adapter) darknodes() (identity.Addresses, error) {
 				// We are finished when a nil address is returned
 				return darknodes, nil
 			}
-			darknodes = append(darknodes, identity.Address(value.Bytes()))
+			darknodes = append(darknodes, identity.ID(value.Bytes()).Address())
 		}
 		lastValue := values[len(values)-1]
 		values, err = adapter.darknodeRegistryContract.GetDarknodes(&bind.CallOpts{}, lastValue, big.NewInt(480))
