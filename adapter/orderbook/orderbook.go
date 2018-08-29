@@ -47,9 +47,14 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 	if err != nil {
 		return nil, err
 	}
+	renexSettlement, err := bindings.NewRenExSettlement(client.RenExSettlementAddress(), bind.ContractBackend(client.Client()))
+	if err != nil {
+		return nil, err
+	}
 	return &adapter{
 		orderbookContract:        orderbook,
 		darknodeRegistryContract: darknodeRegistry,
+		renexSettlementContract:  renexSettlement,
 		httpAddress:              httpAddress,
 		trader:                   trader,
 		client:                   client,
@@ -61,7 +66,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	balance, err := adapter.funds.UsableBalance(getTokenCode(order))
 	if balance.Uint64() < order.Volume {
-		return fmt.Errorf("Order volume exceeded usable balance")
+		return fmt.Errorf("Order volume exceeded usable balance have:%d want:%d", balance.Uint64(), order.Volume)
 	}
 
 	mapping, err := adapter.buildOrderMapping(order)

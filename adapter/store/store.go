@@ -66,9 +66,9 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	defer store.storeMu.RUnlock()
 	data, err := store.Read([]byte("ORDERS"))
 	if err != nil {
-		return []order.Order{}, nil
+		return nil, err
 	}
-	fmt.Println("read the open orders")
+
 	orderList := orders{}
 	if err := json.Unmarshal(data, &orderList); err != nil {
 		return nil, err

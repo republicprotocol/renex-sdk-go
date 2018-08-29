@@ -19,6 +19,7 @@ type Client interface {
 	Client() *ethclient.Client
 	OrderbookAddress() common.Address
 	DarknodeRegistryAddress() common.Address
+	RenExSettlementAddress() common.Address
 	RenExBalancesAddress() common.Address
 	RenExTokensAddress() common.Address
 	WaitTillMined(ctx context.Context, tx *types.Transaction) (*types.Receipt, error)
@@ -43,6 +44,7 @@ type client struct {
 	darknodeRegistry common.Address
 	renExBalances    common.Address
 	renExTokens      common.Address
+	renExSettlement  common.Address
 }
 
 func GetNetwork(network string) (Network, error) {
@@ -73,11 +75,11 @@ func GetNetwork(network string) (Network, error) {
 		return Network{
 			URL:   "https://kovan.infura.io",
 			Chain: "kovan",
-			DarknodeRegistryAddress: "0xb3972e45d16b0942ed34943fdde413190cf5b12a",
-			OrderbookAddress:        "0x8356e57aa32547685149a859293ad83c144b800c",
-			RenExBalancesAddress:    "0xc2c126e1eb32e6ad50c611fb92d009b4b4518b00",
-			RenExSettlementAddress:  "0x65712325c41fb39b9205e08483b43142d919cc42",
-			RenExAtomicInfoAddress:  "0x8c0c87c751f15501fadc20b01733dbd3bb93d257",
+			DarknodeRegistryAddress: "0x8a31d477267A5af1bc5142904ef0AfA31D326E03",
+			OrderbookAddress:        "0x376127aDc18260fc238eBFB6626b2F4B59eC9b66",
+			RenExBalancesAddress:    "0xa95dE870dDFB6188519D5CC63CEd5E0FBac1aa8E",
+			RenExSettlementAddress:  "0x5f25233ca99104D31612D4fB937B090d5A2EbB75",
+			RenExAtomicInfoAddress:  "0xe1A660657A32053fe83B19B1177F6B56C6F37b1f",
 			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
 		}, nil
 	default:
@@ -104,6 +106,7 @@ func NewClient(net string) (Client, error) {
 		darknodeRegistry: common.HexToAddress(network.DarknodeRegistryAddress),
 		renExBalances:    common.HexToAddress(network.RenExBalancesAddress),
 		renExTokens:      common.HexToAddress(network.RenExTokensAddress),
+		renExSettlement:  common.HexToAddress(network.RenExSettlementAddress),
 	}, nil
 }
 
@@ -189,6 +192,9 @@ func (client *client) DarknodeRegistryAddress() common.Address {
 
 func (client *client) RenExBalancesAddress() common.Address {
 	return client.renExBalances
+}
+func (client *client) RenExSettlementAddress() common.Address {
+	return client.renExSettlement
 }
 
 func (client *client) RenExTokensAddress() common.Address {

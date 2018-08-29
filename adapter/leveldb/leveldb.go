@@ -26,7 +26,11 @@ func NewLDBStore(path string) (Store, error) {
 }
 
 func (ldb *ldbStore) Read(key []byte) ([]byte, error) {
-	return ldb.db.Get(key, nil)
+	value, err := ldb.db.Get(key, nil)
+	if err == leveldb.ErrNotFound {
+		return []byte{}, nil
+	}
+	return value, err
 }
 
 func (ldb *ldbStore) Write(key []byte, value []byte) error {
