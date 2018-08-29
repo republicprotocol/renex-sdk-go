@@ -12,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
@@ -55,8 +56,6 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestOpenOrder(order order.Order) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	balance, err := adapter.funds.UsableBalance(getTokenCode(order))
 	if balance.Uint64() < order.Volume {
 		return fmt.Errorf("Order volume exceeded usable balance")
@@ -107,7 +106,9 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	tx, err := adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
+	})
 	if err != nil {
 		return err
 	}
@@ -120,9 +121,9 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 }
 
 func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
-	tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
+	})
 	if err != nil {
 		return err
 	}

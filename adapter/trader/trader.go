@@ -5,16 +5,22 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/republicprotocol/republic-go/crypto"
 )
 
 type trader struct {
+	transactOpts *bind.TransactOpts
+	address      common.Address
 	*ecdsa.PrivateKey
 	*sync.RWMutex
 }
@@ -24,10 +30,9 @@ type trader struct {
 // or even participants with insufficient funds.
 type Trader interface {
 	Sign([]byte) ([]byte, error)
+	SendTx(f func() (*types.Transaction, error)) (*types.Transaction, error)
 	TransactOpts() *bind.TransactOpts
 	Address() common.Address
-	Lock()
-	Unlock()
 }
 
 func NewTrader(path string, passphrase string) (Trader, error) {
@@ -51,14 +56,21 @@ func NewTrader(path string, passphrase string) (Trader, error) {
 		if err != nil {
 			return nil, err
 		}
+		transactOpts := bind.NewKeyedTransactor(key.PrivateKey)
 		return &trader{
-			key.PrivateKey,
-			new(sync.RWMutex),
+			transactOpts: transactOpts,
+			address:      transactOpts.From,
+			PrivateKey:   key.PrivateKey,
+			RWMutex:      new(sync.RWMutex),
 		}, nil
 	}
+
+	transactOpts := bind.NewKeyedTransactor(ks.EcdsaKey.PrivateKey)
 	return &trader{
-		ks.EcdsaKey.PrivateKey,
-		new(sync.RWMutex),
+		transactOpts: transactOpts,
+		address:      transactOpts.From,
+		PrivateKey:   ks.EcdsaKey.PrivateKey,
+		RWMutex:      new(sync.RWMutex),
 	}, nil
 }
 
@@ -72,4 +84,29 @@ func (t *trader) Address() common.Address {
 
 func (t *trader) Sign(data []byte) ([]byte, error) {
 	return t.PrivateKey.Sign(rand.Reader, data, nil)
+}
+
+func (t *trader) SendTx(f func() (*types.Transaction, error)) (*types.Transaction, error) {
+	t.Lock()
+	defer t.Unlock()
+	return t.sendTx(f)
+}
+
+func (t *trader) sendTx(f func() (*types.Transaction, error)) (*types.Transaction, error) {
+	tx, err := f()
+	if err == nil {
+		t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+		return tx, nil
+	}
+
+	if err == core.ErrNonceTooLow || err == core.ErrReplaceUnderpriced || strings.Contains(err.Error(), "nonce is too low") {
+		t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+		return t.sendTx(f)
+	}
+
+	if err == core.ErrNonceTooHigh {
+		t.transactOpts.Nonce.Sub(t.transactOpts.Nonce, big.NewInt(1))
+		return t.sendTx(f)
+	}
+	return tx, err
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
@@ -53,8 +54,6 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -64,7 +63,9 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, va
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, signature)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, signature)
+	})
 	if err != nil {
 		return err
 	}
@@ -76,8 +77,6 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, va
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*funds.IdempotentKey, error) {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
@@ -87,7 +86,9 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 		return nil, fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.renExBalancesContract.SignalBackupWithdraw(adapter.trader.TransactOpts(), token.Addr)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.renExBalancesContract.SignalBackupWithdraw(adapter.trader.TransactOpts(), token.Addr)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +106,6 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -116,7 +115,9 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, []byte{})
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, []byte{})
+	})
 	if err != nil {
 		return err
 	}
@@ -167,8 +168,6 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 }
 
 func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -186,7 +185,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 	if addr.String() == token.Addr.String() {
 		auth := adapter.trader.TransactOpts()
 		auth.Value = value
-		tx, err := adapter.renExBalancesContract.Deposit(auth, token.Addr, value)
+		tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+			return adapter.renExBalancesContract.Deposit(auth, token.Addr, value)
+		})
 		if err != nil {
 			return err
 		}
@@ -201,15 +202,20 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		return err
 	}
 
-	tx, err := tokenContract.Approve(adapter.trader.TransactOpts(), adapter.client.RenExBalancesAddress(), value)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return tokenContract.Approve(adapter.trader.TransactOpts(), adapter.client.RenExBalancesAddress(), value)
+	})
 	if err != nil {
 		return err
 	}
+
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
 		return err
 	}
 
-	tx2, err := adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
+	tx2, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
+	})
 	if err != nil {
 		return err
 	}
@@ -269,14 +275,10 @@ func (adapter *adapter) Address() string {
 }
 
 func (adapter *adapter) TransferEth(address string, value *big.Int) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	return adapter.client.Transfer(common.HexToAddress(address), adapter.trader.TransactOpts(), value)
 }
 
 func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, value *big.Int) error {
-	adapter.trader.Lock()
-	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -287,7 +289,9 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 		return err
 	}
 
-	tx, err := erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
+	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
+		return erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
+	})
 	if err != nil {
 		return err
 	}
