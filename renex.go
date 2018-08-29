@@ -1,6 +1,8 @@
 package renex
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -20,7 +22,7 @@ type RenEx struct {
 	funds.Funds
 }
 
-func NewRenEx(network, keystorePath, dbId, passphrase string) (RenEx, error) {
+func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 	newTrader, err := trader.NewTrader(keystorePath, passphrase)
 	if err != nil {
@@ -32,7 +34,12 @@ func NewRenEx(network, keystorePath, dbId, passphrase string) (RenEx, error) {
 		return RenEx{}, err
 	}
 
-	newStoreAdapter, err := leveldb.NewLDBStore(os.Getenv("HOME") + fmt.Sprintf("/.renex/db%s", dbId))
+	randomDBID := make([]byte, 32)
+	if _, err := rand.Read(randomDBID); err != nil {
+		return RenEx{}, err
+	}
+
+	newStoreAdapter, err := leveldb.NewLDBStore(os.Getenv("HOME") + fmt.Sprintf("/.renex/db%s", hex.EncodeToString(randomDBID)))
 	if err != nil {
 		return RenEx{}, err
 	}

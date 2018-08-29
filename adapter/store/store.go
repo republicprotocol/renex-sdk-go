@@ -3,12 +3,15 @@ package store
 import (
 	"encoding/json"
 	"math/big"
+	"sync"
 
 	"github.com/republicprotocol/republic-go/order"
 )
 
 type store struct {
 	StoreAdapter
+
+	storeMu *sync.RWMutex
 }
 
 type orders struct {
@@ -28,7 +31,10 @@ type Store interface {
 }
 
 func NewStore(adapter StoreAdapter) Store {
-	return &store{}
+	return &store{
+		StoreAdapter: adapter,
+		storeMu:      new(sync.RWMutex),
+	}
 }
 
 func (store *store) RequestLockedBalance(tokenCode order.Token) (*big.Int, error) {
