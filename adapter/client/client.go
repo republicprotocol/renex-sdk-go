@@ -32,6 +32,8 @@ type Network struct {
 	DarknodeRegistryAddress string `json:"darknodeRegistry"`
 	RenExBalancesAddress    string `json:"renExBalances"`
 	RenExTokensAddress      string `json:"renExTokens"`
+	RenExSettlementAddress  string `json:"renExSettlement"`
+	RenExAtomicInfoAddress  string `json:"renExAtomicInfo"`
 }
 
 type client struct {
@@ -47,30 +49,36 @@ func GetNetwork(network string) (Network, error) {
 	switch network {
 	case "testnet":
 		return Network{
-			URL:                     "https://kovan.infura.io",
-			Chain:                   "kovan",
-			OrderbookAddress:        "",
-			DarknodeRegistryAddress: "",
-			RenExBalancesAddress:    "",
-			RenExTokensAddress:      "",
+			URL:   "https://kovan.infura.io",
+			Chain: "kovan",
+			DarknodeRegistryAddress: "0x372b6204263c6867f81e2a9e11057ff43efea14b",
+			OrderbookAddress:        "0xa7caa4780a39d8b8acd6a0bdfb5b906210bc76cd",
+			RenExBalancesAddress:    "0xc5b98949AB0dfa0A7d4c07Bb29B002D6d6DA3e25",
+			RenExSettlementAddress:  "0xfa0938e3c9a5e33b5084dfbffaca9241aef39be8",
+			RenExAtomicInfoAddress:  "0xCf85e1Ee45df67Bc9a65B9707a24b64Ac3174259",
+			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
 		}, nil
 	case "falcon":
 		return Network{
-			URL:                     "https://kovan.infura.io",
-			Chain:                   "kovan",
-			OrderbookAddress:        "",
-			DarknodeRegistryAddress: "",
-			RenExBalancesAddress:    "",
-			RenExTokensAddress:      "",
+			URL:   "https://kovan.infura.io",
+			Chain: "kovan",
+			DarknodeRegistryAddress: "0xfafd5c83d1e21763b79418c4ecb5d62b4970df8e",
+			OrderbookAddress:        "0x044b08eec761c39ac32aee1d6ef0583812f21699",
+			RenExBalancesAddress:    "0x3083e5ba36c6b42ca93c22c803013a4539eedc7f",
+			RenExSettlementAddress:  "0x8617dcd709bb8660602ef70ade78626b7408a210",
+			RenExAtomicInfoAddress:  "0xafe5539b40b17404e3cb6cf5013fc7dab3c54163",
+			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
 		}, nil
 	case "nightly":
 		return Network{
-			URL:                     "https://kovan.infura.io",
-			Chain:                   "kovan",
-			OrderbookAddress:        "",
-			DarknodeRegistryAddress: "",
-			RenExBalancesAddress:    "",
-			RenExTokensAddress:      "",
+			URL:   "https://kovan.infura.io",
+			Chain: "kovan",
+			DarknodeRegistryAddress: "0xb3972e45d16b0942ed34943fdde413190cf5b12a",
+			OrderbookAddress:        "0x8356e57aa32547685149a859293ad83c144b800c",
+			RenExBalancesAddress:    "0xc2c126e1eb32e6ad50c611fb92d009b4b4518b00",
+			RenExSettlementAddress:  "0x65712325c41fb39b9205e08483b43142d919cc42",
+			RenExAtomicInfoAddress:  "0x8c0c87c751f15501fadc20b01733dbd3bb93d257",
+			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
 		}, nil
 	default:
 		return Network{}, fmt.Errorf("Unknown Network")
