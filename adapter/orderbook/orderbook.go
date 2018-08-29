@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -298,6 +299,7 @@ func (adapter *adapter) pods() ([]registry.Pod, error) {
 		}
 		fmt.Println("Waiting for node registration")
 		for !isRegistered || positionInOcean[x.Int64()] != -1 {
+			fmt.Println("Is", hex.EncodeToString(darknodeAddrs[x.Int64()].Hash()), "registered:", isRegistered, "position", positionInOcean[x.Int64()])
 			x.Add(x, big.NewInt(1))
 			x.Mod(x, numberOfDarknodes)
 			isRegistered, err = adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
