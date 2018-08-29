@@ -20,7 +20,7 @@ type RenEx struct {
 	funds.Funds
 }
 
-func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
+func NewRenEx(network, keystorePath, dbId, passphrase string) (RenEx, error) {
 	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 	newTrader, err := trader.NewTrader(keystorePath, passphrase)
 	if err != nil {
@@ -32,7 +32,7 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 		return RenEx{}, err
 	}
 
-	newStoreAdapter, err := leveldb.NewLDBStore(os.Getenv("HOME") + "/.renex/db")
+	newStoreAdapter, err := leveldb.NewLDBStore(os.Getenv("HOME") + fmt.Sprintf("/.renex/db%s", dbId))
 	if err != nil {
 		return RenEx{}, err
 	}
