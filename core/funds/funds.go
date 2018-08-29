@@ -85,11 +85,13 @@ func (service *service) UsableBalance(tokenCode order.Token) (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("Balance: ", balance.Uint64())
 
 	lockedBalance, err := service.RequestLockedBalance(tokenCode)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("Locked Balance: ", balance.Uint64())
 
 	return balance.Sub(balance, lockedBalance), nil
 }

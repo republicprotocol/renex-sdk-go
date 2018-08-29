@@ -28,6 +28,8 @@ type StoreAdapter interface {
 type Store interface {
 	RequestLockedBalance(order.Token) (*big.Int, error)
 	OpenOrdersExist(order.Token) (bool, error)
+	AppendOrder(order.Order) error
+	DeleteOrder(order.ID) error
 }
 
 func NewStore(adapter StoreAdapter) Store {

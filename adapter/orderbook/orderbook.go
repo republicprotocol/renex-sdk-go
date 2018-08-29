@@ -17,6 +17,7 @@ import (
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
+	"github.com/republicprotocol/renex-sdk-go/adapter/store"
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
@@ -34,9 +35,10 @@ type adapter struct {
 	trader                   trader.Trader
 	client                   client.Client
 	funds                    funds.Funds
+	store                    store.Store
 }
 
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds) (orderbook.Adapter, error) {
+func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store) (orderbook.Adapter, error) {
 	orderbook, err := bindings.NewOrderbook(client.OrderbookAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
@@ -52,6 +54,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 		trader:                   trader,
 		client:                   client,
 		funds:                    funds,
+		store:                    store,
 	}, nil
 }
 
@@ -117,7 +120,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	return nil
+	return adapter.store.AppendOrder(order)
 }
 
 func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
@@ -133,7 +136,7 @@ func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
 		return err
 	}
-	return nil
+	return adapter.store.DeleteOrder(orderID)
 }
 
 func (adapter *adapter) ListOrders() ([]order.ID, []string, []uint8, error) {
