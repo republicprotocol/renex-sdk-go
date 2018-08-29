@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -15,6 +16,7 @@ import (
 
 type trader struct {
 	*ecdsa.PrivateKey
+	*sync.RWMutex
 }
 
 // Trader represents an individual entity that opens orders.
@@ -24,6 +26,8 @@ type Trader interface {
 	Sign([]byte) ([]byte, error)
 	TransactOpts() *bind.TransactOpts
 	Address() common.Address
+	Lock()
+	Unlock()
 }
 
 func NewTrader(path string, passphrase string) (Trader, error) {
@@ -49,10 +53,12 @@ func NewTrader(path string, passphrase string) (Trader, error) {
 		}
 		return &trader{
 			key.PrivateKey,
+			new(sync.RWMutex),
 		}, nil
 	}
 	return &trader{
 		ks.EcdsaKey.PrivateKey,
+		new(sync.RWMutex),
 	}, nil
 }
 

@@ -55,6 +55,8 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestOpenOrder(order order.Order) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	balance, err := adapter.funds.UsableBalance(getTokenCode(order))
 	if balance.Uint64() < order.Volume {
 		return fmt.Errorf("Order volume exceeded usable balance")
@@ -118,6 +120,8 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 }
 
 func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
 	if err != nil {
 		return err
@@ -126,7 +130,6 @@ func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
 		return err
 	}
-
 	return nil
 }
 

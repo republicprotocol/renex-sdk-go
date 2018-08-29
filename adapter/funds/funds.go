@@ -53,6 +53,8 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -74,6 +76,8 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, va
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*funds.IdempotentKey, error) {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
@@ -101,6 +105,8 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 }
 
 func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -161,6 +167,8 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 }
 
 func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -261,10 +269,14 @@ func (adapter *adapter) Address() string {
 }
 
 func (adapter *adapter) TransferEth(address string, value *big.Int) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	return adapter.client.Transfer(common.HexToAddress(address), adapter.trader.TransactOpts(), value)
 }
 
 func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, value *big.Int) error {
+	adapter.trader.Lock()
+	defer adapter.trader.Unlock()
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
