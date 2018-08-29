@@ -48,6 +48,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 		httpAddress:           httpAddress,
 		trader:                trader,
 		Store:                 store,
+		client:                client,
 	}, nil
 }
 
