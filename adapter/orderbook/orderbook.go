@@ -85,11 +85,13 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 	buf := bytes.NewBuffer(data)
 
+	fmt.Println("Waiting for the post response")
 	resp, err := http.DefaultClient.Post(fmt.Sprintf("%s/orders", adapter.httpAddress), "application/json", buf)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+	fmt.Println("Recieved the post response")
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -105,7 +107,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 201 {
 		return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 	}
 
