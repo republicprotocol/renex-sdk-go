@@ -105,9 +105,9 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	if err != nil {
 		return err
 	}
-
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return err
@@ -121,9 +121,11 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 }
 
 func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
+		return adapter.client, tx, err
 	})
+
 	if err != nil {
 		return err
 	}

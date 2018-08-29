@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"fmt"
@@ -9,12 +10,14 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/republic-go/crypto"
 )
 
@@ -30,7 +33,7 @@ type trader struct {
 // or even participants with insufficient funds.
 type Trader interface {
 	Sign([]byte) ([]byte, error)
-	SendTx(f func() (*types.Transaction, error)) (*types.Transaction, error)
+	SendTx(f func() (client.Client, *types.Transaction, error)) (*types.Transaction, error)
 	TransactOpts() *bind.TransactOpts
 	Address() common.Address
 }
@@ -86,14 +89,21 @@ func (t *trader) Sign(data []byte) ([]byte, error) {
 	return t.PrivateKey.Sign(rand.Reader, data, nil)
 }
 
-func (t *trader) SendTx(f func() (*types.Transaction, error)) (*types.Transaction, error) {
+func (t *trader) SendTx(f func() (client.Client, *types.Transaction, error)) (*types.Transaction, error) {
 	t.Lock()
 	defer t.Unlock()
 	return t.sendTx(f)
 }
 
-func (t *trader) sendTx(f func() (*types.Transaction, error)) (*types.Transaction, error) {
-	tx, err := f()
+func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*types.Transaction, error) {
+	client, tx, err := f()
+
+	nonce, err := client.Client().PendingNonceAt(context.Background(), t.address)
+	if err != nil {
+		return tx, err
+	}
+	t.transactOpts.Nonce = big.NewInt(int64(nonce))
+
 	if err == nil {
 		t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
 		return tx, nil
@@ -108,5 +118,21 @@ func (t *trader) sendTx(f func() (*types.Transaction, error)) (*types.Transactio
 		t.transactOpts.Nonce.Sub(t.transactOpts.Nonce, big.NewInt(1))
 		return t.sendTx(f)
 	}
+
+	// If any other type of nonce error occurs we will refresh the nonce and
+	// try again for up to 1 minute
+	for try := 0; try < 60 && strings.Contains(err.Error(), "nonce"); try++ {
+		time.Sleep(time.Second)
+		nonce, err = client.Client().PendingNonceAt(context.Background(), t.transactOpts.From)
+		if err != nil {
+			continue
+		}
+		t.transactOpts.Nonce = big.NewInt(int64(nonce))
+		if _, tx, err = f(); err == nil {
+			t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+			return tx, nil
+		}
+	}
+
 	return tx, err
 }

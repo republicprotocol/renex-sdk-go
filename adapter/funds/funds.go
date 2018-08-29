@@ -63,9 +63,11 @@ func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, va
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, signature)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, signature)
+		return adapter.client, tx, err
 	})
+
 	if err != nil {
 		return err
 	}
@@ -86,8 +88,9 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 		return nil, fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.renExBalancesContract.SignalBackupWithdraw(adapter.trader.TransactOpts(), token.Addr)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.renExBalancesContract.SignalBackupWithdraw(adapter.trader.TransactOpts(), token.Addr)
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return nil, err
@@ -115,8 +118,9 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, []byte{})
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, []byte{})
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return err
@@ -185,8 +189,10 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 	if addr.String() == token.Addr.String() {
 		auth := adapter.trader.TransactOpts()
 		auth.Value = value
-		tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-			return adapter.renExBalancesContract.Deposit(auth, token.Addr, value)
+
+		tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+			tx, err := adapter.renExBalancesContract.Deposit(auth, token.Addr, value)
+			return adapter.client, tx, err
 		})
 		if err != nil {
 			return err
@@ -202,8 +208,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		return err
 	}
 
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return tokenContract.Approve(adapter.trader.TransactOpts(), adapter.client.RenExBalancesAddress(), value)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := tokenContract.Approve(adapter.trader.TransactOpts(), adapter.client.RenExBalancesAddress(), value)
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return err
@@ -213,8 +220,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		return err
 	}
 
-	tx2, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
+	tx2, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return err
@@ -289,8 +297,9 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 		return err
 	}
 
-	tx, err := adapter.trader.SendTx(func() (*types.Transaction, error) {
-		return erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
+	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
+		tx, err := erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
+		return adapter.client, tx, err
 	})
 	if err != nil {
 		return err
