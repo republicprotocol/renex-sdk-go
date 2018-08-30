@@ -197,6 +197,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		if err != nil {
 			return err
 		}
+		if tx == nil {
+			return fmt.Errorf("Nil Eth Transaction")
+		}
 		if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
 			return err
 		}
@@ -215,7 +218,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 	if err != nil {
 		return err
 	}
-
+	if tx == nil {
+		return fmt.Errorf("Nil Approve Transaction")
+	}
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
 		return err
 	}
@@ -224,6 +229,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		tx, err := adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
 		return adapter.client, tx, err
 	})
+	if tx2 == nil {
+		return fmt.Errorf("Nil Approve Transaction")
+	}
 	if err != nil {
 		return err
 	}
