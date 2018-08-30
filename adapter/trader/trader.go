@@ -90,25 +90,27 @@ func (t *trader) SendTx(f func() (client.Client, *types.Transaction, error)) (*t
 
 func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*types.Transaction, error) {
 	client, tx, err := f()
+	opts := t.transactOpts
 
 	nonce, err := client.Client().PendingNonceAt(context.Background(), t.address)
 	if err != nil {
 		return tx, err
 	}
-	t.transactOpts.Nonce = big.NewInt(int64(nonce))
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.GasLimit = 3000000
 
 	if err == nil {
-		t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+		opts.Nonce.Add(opts.Nonce, big.NewInt(1))
 		return tx, nil
 	}
 
 	if err == core.ErrNonceTooLow || err == core.ErrReplaceUnderpriced || strings.Contains(err.Error(), "nonce is too low") {
-		t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+		opts.Nonce.Add(opts.Nonce, big.NewInt(1))
 		return t.sendTx(f)
 	}
 
 	if err == core.ErrNonceTooHigh {
-		t.transactOpts.Nonce.Sub(t.transactOpts.Nonce, big.NewInt(1))
+		opts.Nonce.Sub(opts.Nonce, big.NewInt(1))
 		return t.sendTx(f)
 	}
 
@@ -116,16 +118,17 @@ func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*t
 	// try again for up to 1 minute
 	for try := 0; try < 60 && strings.Contains(err.Error(), "nonce"); try++ {
 		time.Sleep(time.Second)
-		nonce, err = client.Client().PendingNonceAt(context.Background(), t.transactOpts.From)
+		nonce, err = client.Client().PendingNonceAt(context.Background(), opts.From)
 		if err != nil {
 			continue
 		}
-		t.transactOpts.Nonce = big.NewInt(int64(nonce))
+		opts.Nonce = big.NewInt(int64(nonce))
 		if _, tx, err = f(); err == nil {
-			t.transactOpts.Nonce.Add(t.transactOpts.Nonce, big.NewInt(1))
+			opts.Nonce.Add(opts.Nonce, big.NewInt(1))
 			return tx, nil
 		}
 	}
+	t.transactOpts.Nonce = opts.Nonce
 
 	return tx, err
 }
