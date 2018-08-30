@@ -56,7 +56,7 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestOpenOrder(order order.Order) error {
-	balance, err := adapter.funds.UsableBalance(getTokenCode(order))
+	balance, err := adapter.funds.UsableRenExBalance(getTokenCode(order))
 	if balance.Uint64() < order.Volume {
 		return fmt.Errorf("Order volume exceeded usable balance have:%d want:%d", balance.Uint64(), order.Volume)
 	}
@@ -150,9 +150,9 @@ func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, erro
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		orderIDs := append(orderIDs, orderIDValues...)
-		addresses := append(addresses, addressValues...)
-		statuses := append(statuses, statusValues...)
+		orderIDs = append(orderIDs, orderIDValues...)
+		addresses = append(addresses, addressValues...)
+		statuses = append(statuses, statusValues...)
 		start = start + 500
 	}
 }

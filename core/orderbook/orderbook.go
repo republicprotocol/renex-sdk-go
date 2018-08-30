@@ -13,7 +13,7 @@ type Adapter interface {
 	Settled(order.ID) (bool, error)
 	RequestOpenOrder(order order.Order) error
 	RequestCancelOrder(orderID order.ID) error
-	ListOrders() ([]order.ID, []string, []order.Status, error)
+	ListOrders() ([]order.ID, []order.Status, []string, error)
 }
 type Orderbook interface {
 	Status(order.ID) (order.Status, error)
@@ -39,7 +39,7 @@ func (service *service) CancelOrder(orderID order.ID) error {
 }
 
 func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, error) {
-	orderIds, addresses, _, err := service.ListOrders()
+	orderIds, _, addresses, err := service.ListOrders()
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, er
 }
 
 func (service *service) ListOrdersByStatus(status order.Status) ([]order.ID, error) {
-	orderIds, _, statuses, err := service.ListOrders()
+	orderIds, statuses, _, err := service.ListOrders()
 	if err != nil {
 		return nil, err
 	}

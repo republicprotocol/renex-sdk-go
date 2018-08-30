@@ -15,7 +15,9 @@ type service struct {
 
 type Adapter interface {
 	Address() string
-	Balance(tokenCode order.Token) (*big.Int, error)
+	BalanceEth() (*big.Int, error)
+	BalanceErc20(tokenCode order.Token) (*big.Int, error)
+	RenExBalance(tokenCode order.Token) (*big.Int, error)
 	TransferEth(address string, value *big.Int) error
 	TransferERC20(address string, token order.Token, value *big.Int) error
 	RequestLockedBalance(tokenCode order.Token) (*big.Int, error)
@@ -32,7 +34,8 @@ type Funds interface {
 	Address() string
 	Transfer(address string, token order.Token, value *big.Int) error
 	Balance(token order.Token) (*big.Int, error)
-	UsableBalance(token order.Token) (*big.Int, error)
+	RenExBalance(token order.Token) (*big.Int, error)
+	UsableRenExBalance(token order.Token) (*big.Int, error)
 	Deposit(token order.Token, value *big.Int) error
 	Withdraw(token order.Token, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error)
 }
@@ -80,8 +83,8 @@ func (service *service) Deposit(tokenCode order.Token, value *big.Int) error {
 	return service.RequestDeposit(tokenCode, value)
 }
 
-func (service *service) UsableBalance(tokenCode order.Token) (*big.Int, error) {
-	balance, err := service.Balance(tokenCode)
+func (service *service) UsableRenExBalance(tokenCode order.Token) (*big.Int, error) {
+	balance, err := service.RenExBalance(tokenCode)
 	if err != nil {
 		return nil, err
 	}
@@ -110,5 +113,22 @@ func (service *service) Transfer(address string, tokenCode order.Token, value *b
 		return service.TransferEth(address, value)
 	default:
 		return fmt.Errorf("Unsupported Currency")
+	}
+}
+
+func (service *service) Balance(tokenCode order.Token) (*big.Int, error) {
+	switch tokenCode {
+	case order.TokenREN:
+		return service.BalanceErc20(tokenCode)
+	case order.TokenDGX:
+		return service.BalanceErc20(tokenCode)
+	case order.TokenABC:
+		return service.BalanceErc20(tokenCode)
+	case order.TokenXYZ:
+		return service.BalanceErc20(tokenCode)
+	case order.TokenETH:
+		return service.BalanceEth()
+	default:
+		return nil, fmt.Errorf("Unsupported Currency")
 	}
 }

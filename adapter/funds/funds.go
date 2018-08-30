@@ -265,7 +265,7 @@ func (adapter *adapter) CheckStatus(key *funds.IdempotentKey) uint8 {
 	return uint8(2)
 }
 
-func (adapter *adapter) Balance(tokenCode order.Token) (*big.Int, error) {
+func (adapter *adapter) RenExBalance(tokenCode order.Token) (*big.Int, error) {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
@@ -310,6 +310,24 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 	}
 
 	return nil
+}
+
+func (adapter *adapter) BalanceEth() (*big.Int, error) {
+	return adapter.client.Client().BalanceAt(context.Background(), adapter.trader.Address(), nil)
+}
+
+func (adapter *adapter) BalanceErc20(tokenCode order.Token) (*big.Int, error) {
+	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
+	if err != nil {
+		return nil, err
+	}
+
+	erc20, err := bindings.NewERC20(token.Addr, bind.ContractBackend(adapter.client.Client()))
+	if err != nil {
+		return nil, err
+	}
+
+	return erc20.BalanceOf(&bind.CallOpts{}, adapter.trader.Address())
 }
 
 func toBytes32(b []byte) ([32]byte, error) {
