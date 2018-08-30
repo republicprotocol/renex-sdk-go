@@ -1,14 +1,17 @@
 package store
 
 import (
-	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
 
 	"github.com/republicprotocol/republic-go/order"
 )
+
+// ErrOrdersNotFound is returned when the Storer cannot find any orders.
+var ErrOrdersNotFound = errors.New("orders not found")
 
 type store struct {
 	StoreAdapter
@@ -66,11 +69,10 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	store.storeMu.RLock()
 	defer store.storeMu.RUnlock()
 	data, err := store.Read([]byte("ORDERS"))
-	if err != nil {
+	if err != nil && err != ErrOrdersNotFound {
 		return nil, err
 	}
-
-	if bytes.Compare(data, []byte{}) == 0 {
+	if err == ErrOrdersNotFound {
 		return []order.Order{}, nil
 	}
 
@@ -97,8 +99,11 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 
 func (store *store) Order(id order.ID) (order.Order, error) {
 	data, err := store.Read(append([]byte("ORDER"), id[:]...))
-	if err != nil {
+	if err != nil && err != ErrOrdersNotFound {
 		return order.Order{}, err
+	}
+	if err == ErrOrdersNotFound {
+		return order.Order{}, nil
 	}
 	ord := order.Order{}
 	if err := json.Unmarshal(data, &ord); err != nil {
@@ -118,13 +123,16 @@ func (store *store) AppendOrder(ord order.Order) error {
 		return err
 	}
 	ordersData, err := store.Read([]byte("ORDERS"))
-	if err != nil {
+	if err != nil && err != ErrOrdersNotFound {
 		return err
 	}
 	orderList := orders{}
-	if err := json.Unmarshal(ordersData, &orderList); err != nil {
-		return err
+	if err != ErrOrdersNotFound {
+		if err := json.Unmarshal(ordersData, &orderList); err != nil {
+			return err
+		}
 	}
+
 	orderList.ids = append(orderList.ids, ord.ID)
 	orderListData, err := json.Marshal(orderList)
 	if err != nil {
@@ -143,6 +151,7 @@ func (store *store) DeleteOrder(id order.ID) error {
 	if err != nil {
 		return err
 	}
+
 	orderList := orders{}
 	if err := json.Unmarshal(data, &orderList); err != nil {
 		return err

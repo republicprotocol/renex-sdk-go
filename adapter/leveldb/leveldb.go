@@ -1,6 +1,7 @@
 package leveldb
 
 import (
+	"github.com/republicprotocol/renex-sdk-go/adapter/store"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -28,7 +29,7 @@ func NewLDBStore(path string) (Store, error) {
 func (ldb *ldbStore) Read(key []byte) ([]byte, error) {
 	value, err := ldb.db.Get(key, nil)
 	if err == leveldb.ErrNotFound {
-		return []byte{}, nil
+		return nil, store.ErrOrdersNotFound
 	}
 	return value, err
 }
