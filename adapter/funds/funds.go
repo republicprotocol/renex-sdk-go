@@ -155,20 +155,20 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 		return nil, err
 	}
 
-	type Response struct {
-		Signature string `json:"signature"`
-	}
+	// type Response struct {
+	// 	Signature string `json:"signature"`
+	// }
 
-	respose := Response{}
-	if err := json.Unmarshal(respBytes, respose); err != nil {
-		return nil, err
-	}
+	// respose := Response{}
+	// if err := json.Unmarshal(respBytes, respose); err != nil {
+	// 	return nil, err
+	// }
 
 	if resp.StatusCode != 201 {
 		return nil, fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 	}
 
-	return base64.StdEncoding.DecodeString(respose.Signature)
+	return base64.StdEncoding.DecodeString(string(respBytes))
 }
 
 func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
