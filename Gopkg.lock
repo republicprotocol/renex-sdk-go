@@ -25,8 +25,17 @@
     "common/hexutil",
     "common/math",
     "common/mclock",
+    "consensus",
+    "consensus/misc",
+    "core",
+    "core/rawdb",
+    "core/state",
     "core/types",
+    "core/vm",
     "crypto",
+    "crypto/bn256",
+    "crypto/bn256/cloudflare",
+    "crypto/bn256/google",
     "crypto/randentropy",
     "crypto/secp256k1",
     "crypto/sha3",
@@ -73,6 +82,15 @@
   name = "github.com/gxed/hashland"
   packages = ["keccakpg"]
   revision = "d9f6b97f8db22dd1e090fd0bbbe98f09cc7dd0a8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/golang-lru"
+  packages = [
+    ".",
+    "simplelru"
+  ]
+  revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
 
 [[projects]]
   name = "github.com/jbenet/go-base58"
@@ -129,6 +147,8 @@
   branch = "contract-upgrades"
   name = "github.com/republicprotocol/republic-go"
   packages = [
+    "contract",
+    "contract/bindings",
     "crypto",
     "dispatch",
     "identity",
@@ -141,7 +161,7 @@
     "stackint/asm",
     "swarm"
   ]
-  revision = "d70f8b788f8dfb58b2a0cd96413154df3d9393aa"
+  revision = "19407fe8c7a5f4bd6003d8453d2f2573566cd31f"
 
 [[projects]]
   name = "github.com/rjeczalik/notify"
@@ -186,6 +206,7 @@
   packages = [
     "blake2s",
     "pbkdf2",
+    "ripemd160",
     "scrypt",
     "sha3"
   ]
@@ -237,6 +258,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f853fd927ca0571bf89371371c222c5799a3de853a21b29b3d5c43d62a98c116"
+  inputs-digest = "2142ba81970853ec66c17c1127266f5532883ce65a563672269898ffb2fafaff"
   solver-name = "gps-cdcl"
   solver-version = 1
