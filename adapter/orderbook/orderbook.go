@@ -67,7 +67,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 
 	req := httpadapter.OpenOrderRequest{
-		Address:               adapter.trader.Address().String(),
+		Address:               adapter.trader.Address().String()[2:],
 		OrderFragmentMappings: []httpadapter.OrderFragmentMapping{mapping},
 	}
 

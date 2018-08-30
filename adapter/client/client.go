@@ -156,6 +156,12 @@ func (b *client) WaitTillMined(ctx context.Context, tx *types.Transaction) (*typ
 		time.Sleep(100 * time.Millisecond)
 		return nil, nil
 	default:
+		if b.client == nil {
+			return nil, fmt.Errorf("Nil Client")
+		}
+		if tx == nil {
+			return nil, fmt.Errorf("Nil Tx")
+		}
 		reciept, err := bind.WaitMined(ctx, b.client, tx)
 		if err != nil {
 			return nil, err
