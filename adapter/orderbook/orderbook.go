@@ -2,17 +2,14 @@ package orderbook
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
@@ -21,45 +18,40 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
-	"github.com/republicprotocol/republic-go/crypto"
-	"github.com/republicprotocol/republic-go/identity"
+	"github.com/republicprotocol/republic-go/contract"
 	"github.com/republicprotocol/republic-go/order"
-	"github.com/republicprotocol/republic-go/registry"
 )
 
 type adapter struct {
-	httpAddress              string
-	orderbookContract        *bindings.Orderbook
-	darknodeRegistryContract *bindings.DarknodeRegistry
-	renexSettlementContract  *bindings.RenExSettlement
-	trader                   trader.Trader
-	client                   client.Client
-	funds                    funds.Funds
-	store                    store.Store
+	httpAddress             string
+	republicBinder          contract.Binder
+	renexSettlementContract *bindings.RenExSettlement
+	trader                  trader.Trader
+	client                  client.Client
+	funds                   funds.Funds
+	store                   store.Store
 }
 
 func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store) (orderbook.Adapter, error) {
-	orderbook, err := bindings.NewOrderbook(client.OrderbookAddress(), bind.ContractBackend(client.Client()))
+	conn, err := contract.Connect(contract.Config{Network: contract.NetworkNightly})
 	if err != nil {
 		return nil, err
 	}
-	darknodeRegistry, err := bindings.NewDarknodeRegistry(client.DarknodeRegistryAddress(), bind.ContractBackend(client.Client()))
-	if err != nil {
-		return nil, err
-	}
+
+	republicBinder, err := contract.NewBinder(trader.TransactOpts(), conn)
+
 	renexSettlement, err := bindings.NewRenExSettlement(client.RenExSettlementAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
 	}
 	return &adapter{
-		orderbookContract:        orderbook,
-		darknodeRegistryContract: darknodeRegistry,
-		renexSettlementContract:  renexSettlement,
-		httpAddress:              httpAddress,
-		trader:                   trader,
-		client:                   client,
-		funds:                    funds,
-		store:                    store,
+		republicBinder:          republicBinder,
+		renexSettlementContract: renexSettlement,
+		httpAddress:             httpAddress,
+		trader:                  trader,
+		client:                  client,
+		funds:                   funds,
+		store:                   store,
 	}, nil
 }
 
@@ -115,15 +107,13 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	if err != nil {
 		return err
 	}
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.orderbookContract.OpenOrder(adapter.trader.TransactOpts(), 1, sigBytes, order.ID)
-		return adapter.client, tx, err
-	})
+
+	sig, err := toBytes65(sigBytes)
 	if err != nil {
 		return err
 	}
 
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+	if err := adapter.republicBinder.OpenOrder(1, sig, order.ID); err != nil {
 		return err
 	}
 
@@ -131,54 +121,39 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 }
 
 func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.orderbookContract.CancelOrder(adapter.trader.TransactOpts(), orderID)
-		return adapter.client, tx, err
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+	if err := adapter.republicBinder.CancelOrder(orderID); err != nil {
 		return err
 	}
 	return adapter.store.DeleteOrder(orderID)
 }
 
-func (adapter *adapter) ListOrders() ([]order.ID, []string, []uint8, error) {
-	numOrdersBig, err := adapter.orderbookContract.OrdersCount(&bind.CallOpts{})
+func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, error) {
+	numOrders, err := adapter.republicBinder.OrderCounts()
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	numOrders := numOrdersBig.Int64()
-	orderIDs := make([]order.ID, 0, numOrders)
-	addresses := make([]string, 0, numOrders)
-	statuses := make([]uint8, 0, numOrders)
+	orderCount := int(numOrders)
+	orderIDs := make([]order.ID, 0, orderCount)
+	addresses := make([]string, 0, orderCount)
+	statuses := make([]order.Status, 0, orderCount)
 
-	// Get the first 500 orders
-	start := big.NewInt(0)
-	orderIDValues, addressValues, statusValues, err := adapter.orderbookContract.GetOrders(&bind.CallOpts{}, start, big.NewInt(500))
+	start := 0
+	if orderCount < 500 {
+		return adapter.republicBinder.Orders(0, orderCount)
+	}
 
-	// Loop until all darknode have been loaded
 	for {
+		if orderCount-start < 0 {
+			return orderIDs, statuses, addresses, nil
+		}
+		orderIDValues, statusValues, addressValues, err := adapter.republicBinder.Orders(0, orderCount)
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		for i := range orderIDValues {
-			if bytes.Equal(addressValues[i].Bytes(), []byte{}) {
-				// We are finished when a nil address is returned
-				return orderIDs, addresses, statuses, nil
-			}
-			orderIDs = append(orderIDs, order.ID(orderIDValues[i]))
-			addresses = append(addresses, addressValues[i].Hex())
-			statuses = append(statuses, statusValues[i])
-		}
-		start = start.Add(start, big.NewInt(500))
-		orderIDValues, addressValues, statusValues, err = adapter.orderbookContract.GetOrders(&bind.CallOpts{}, start, big.NewInt(500))
-		if err != nil {
-			return nil, nil, nil, err
-		}
+		orderIDs := append(orderIDs, orderIDValues...)
+		addresses := append(addresses, addressValues...)
+		statuses := append(statuses, statusValues...)
+		start = start + 500
 	}
 }
 
@@ -191,8 +166,7 @@ func (adapter *adapter) Address() []byte {
 }
 
 func (adapter *adapter) Status(id order.ID) (order.Status, error) {
-	status, err := adapter.orderbookContract.OrderState(&bind.CallOpts{}, id)
-	return order.Status(status), err
+	return adapter.republicBinder.Status(id)
 }
 
 func (adapter *adapter) Settled(id order.ID) (bool, error) {
@@ -205,7 +179,7 @@ func (adapter *adapter) Settled(id order.ID) (bool, error) {
 
 func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderFragmentMapping, error) {
 	fmt.Println("Starting to build order mapping")
-	pods, err := adapter.pods()
+	pods, err := adapter.republicBinder.Pods()
 	if err != nil {
 		return nil, err
 	}
@@ -228,11 +202,7 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 				Index: int64(i + 1),
 			}
 
-			pubKeyBytes, err := adapter.darknodeRegistryContract.GetDarknodePublicKey(&bind.CallOpts{}, common.BytesToAddress(pod.Darknodes[i].Hash()))
-			if err != nil {
-				return nil, err
-			}
-			pubKey, err := crypto.RsaPublicKeyFromBytes(pubKeyBytes)
+			pubKey, err := adapter.republicBinder.PublicKey(pod.Darknodes[i].ID().Address())
 			if err != nil {
 				return nil, err
 			}
@@ -265,102 +235,20 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 	return orderFragmentMapping, nil
 }
 
-func (adapter *adapter) pods() ([]registry.Pod, error) {
-	epoch, err := adapter.darknodeRegistryContract.CurrentEpoch(&bind.CallOpts{})
-	if err != nil {
-		return []registry.Pod{}, err
-	}
-
-	darknodeAddrs, err := adapter.darknodes()
-	if err != nil {
-		return []registry.Pod{}, err
-	}
-
-	numberOfNodesInPod, err := adapter.darknodeRegistryContract.MinimumPodSize(&bind.CallOpts{})
-	if err != nil {
-		return []registry.Pod{}, err
-	}
-	if len(darknodeAddrs) < int(numberOfNodesInPod.Int64()) {
-		return []registry.Pod{}, fmt.Errorf("degraded pod: expected at least %v addresses, got %v", int(numberOfNodesInPod.Int64()), len(darknodeAddrs))
-	}
-
-	numberOfDarknodes := big.NewInt(int64(len(darknodeAddrs)))
-	x := big.NewInt(0).Mod(epoch.Epochhash, numberOfDarknodes)
-	positionInOcean := make([]int, len(darknodeAddrs))
-	for i := 0; i < len(darknodeAddrs); i++ {
-		positionInOcean[i] = -1
-	}
-	pods := make([]registry.Pod, (len(darknodeAddrs) / int(numberOfNodesInPod.Int64())))
-	for i := 0; i < len(darknodeAddrs); i++ {
-		isRegistered, err := adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
-		if err != nil {
-			return []registry.Pod{}, err
-		}
-		fmt.Println("Waiting for node registration")
-		for !isRegistered || positionInOcean[x.Int64()] != -1 {
-			fmt.Println("Is", common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()).String(), "registered:", isRegistered, "position", positionInOcean[x.Int64()])
-			x.Add(x, big.NewInt(1))
-			x.Mod(x, numberOfDarknodes)
-			isRegistered, err = adapter.darknodeRegistryContract.IsRegistered(&bind.CallOpts{}, common.BytesToAddress(darknodeAddrs[x.Int64()].Hash()))
-			if err != nil {
-				return []registry.Pod{}, err
-			}
-		}
-		fmt.Println("Node registration complete")
-		positionInOcean[x.Int64()] = i
-		podID := i % (len(darknodeAddrs) / int(numberOfNodesInPod.Int64()))
-		pods[podID].Darknodes = append(pods[podID].Darknodes, darknodeAddrs[x.Int64()])
-		x.Mod(x.Add(x, epoch.Epochhash), numberOfDarknodes)
-	}
-
-	for i := range pods {
-		hashData := [][]byte{}
-		for _, darknodeAddr := range pods[i].Darknodes {
-			hashData = append(hashData, darknodeAddr.ID())
-		}
-		copy(pods[i].Hash[:], crypto.Keccak256(hashData...))
-		pods[i].Position = i
-	}
-	return pods, nil
-}
-
-func (adapter *adapter) darknodes() (identity.Addresses, error) {
-	numDarknodesBig, err := adapter.darknodeRegistryContract.NumDarknodes(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	numDarknodes := numDarknodesBig.Int64()
-	darknodes := make(identity.Addresses, 0, numDarknodes)
-
-	// Get the first 20 pods worth of darknodes
-	nilValue := common.HexToAddress("0x0000000000000000000000000000000000000000")
-	values, err := adapter.darknodeRegistryContract.GetDarknodes(&bind.CallOpts{}, nilValue, big.NewInt(480))
-
-	// Loop until all darknode have been loaded
-	for {
-		if err != nil {
-			return nil, err
-		}
-		for _, value := range values {
-			if bytes.Equal(value.Bytes(), nilValue.Bytes()) {
-				// We are finished when a nil address is returned
-				return darknodes, nil
-			}
-			darknodes = append(darknodes, identity.ID(value.Bytes()).Address())
-		}
-		lastValue := values[len(values)-1]
-		values, err = adapter.darknodeRegistryContract.GetDarknodes(&bind.CallOpts{}, lastValue, big.NewInt(480))
-		if err != nil {
-			return nil, err
-		}
-		// Skip the first value returned so that we do not duplicate values
-		values = values[1:]
-	}
-}
-
 func getTokenCode(ord order.Order) order.Token {
 	if ord.Parity == 0 {
 		return ord.Tokens.PriorityToken()
 	}
 	return ord.Tokens.NonPriorityToken()
+}
+
+func toBytes65(b []byte) ([65]byte, error) {
+	bytes65 := [65]byte{}
+	if len(b) != 65 {
+		return bytes65, errors.New("Length mismatch")
+	}
+	for i := range b {
+		bytes65[i] = b[i]
+	}
+	return bytes65, nil
 }
