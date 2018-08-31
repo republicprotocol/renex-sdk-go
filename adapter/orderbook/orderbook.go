@@ -249,7 +249,7 @@ func (adapter *adapter) BalanceCheck(order order.Order) error {
 }
 
 func getTokenCode(ord order.Order) order.Token {
-	if ord.Parity == order.ParityBuy {
+	if ord.Parity == order.ParitySell {
 		return ord.Tokens.PriorityToken()
 	}
 	return ord.Tokens.NonPriorityToken()
