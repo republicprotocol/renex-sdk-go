@@ -88,13 +88,13 @@ func (service *service) UsableRenExBalance(tokenCode order.Token) (*big.Int, err
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Balance: ", balance.Uint64())
+	fmt.Printf("[%s] Balance: %v", service.Address(), balance.Uint64())
 
 	lockedBalance, err := service.RequestLockedBalance(tokenCode)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Locked Balance: ", balance.Uint64())
+	fmt.Printf("[%s] Locked Balance: %v", service.Address(), lockedBalance.Uint64())
 
 	return balance.Sub(balance, lockedBalance), nil
 }
