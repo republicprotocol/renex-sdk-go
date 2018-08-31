@@ -283,6 +283,7 @@ func (adapter *adapter) RenExBalance(tokenCode order.Token) (*big.Int, error) {
 		return nil, fmt.Errorf("Unregistered token")
 	}
 
+	fmt.Printf("Trader: %s Token: %s \n", adapter.trader.Address().Hex(), token.Addr.String())
 	return adapter.renExBalancesContract.TraderBalances(&bind.CallOpts{}, adapter.trader.Address(), token.Addr)
 }
 
