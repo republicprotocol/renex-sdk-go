@@ -236,9 +236,9 @@ func (adapter *adapter) BalanceCheck(order order.Order) error {
 	if err != nil {
 		return err
 	}
-	decodedVolume := decodeVolume(token, order.Volume)
-	if balance.Cmp(decodedVolume) < 0 {
-		return fmt.Errorf("[%v] Order volume exceeded usable balance have:%v want:%v", token, balance, decodedVolume)
+	volume := big.NewInt(int64(order.Volume))
+	if balance.Cmp(volume) < 0 {
+		return fmt.Errorf("[%v] Order volume exceeded usable balance have:%v want:%v", token, balance, volume)
 	}
 	return nil
 }
@@ -256,17 +256,4 @@ func toBytes65(b []byte) ([65]byte, error) {
 		bytes65[i] = b[i]
 	}
 	return bytes65, nil
-}
-
-func decodeVolume(token order.Token, volume uint64) *big.Int {
-	switch token {
-	case order.TokenABC:
-		return big.NewInt(int64(volume))
-	case order.TokenDGX:
-		return big.NewInt(int64(volume) / 1000)
-	case order.TokenBTC:
-		return big.NewInt(int64(volume) / 10000)
-	default:
-		return big.NewInt(int64(volume)).Mul(big.NewInt(int64(volume)), big.NewInt(1000000))
-	}
 }
