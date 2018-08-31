@@ -243,7 +243,7 @@ func (adapter *adapter) BalanceCheck(order order.Order) error {
 	}
 	decodedVolume := decodeVolume(token, order.Volume)
 	if balance.Cmp(decodedVolume) < 0 {
-		return fmt.Errorf("Order volume exceeded usable balance have:%v want:%v", balance, decodedVolume)
+		return fmt.Errorf("[%v] Order volume exceeded usable balance have:%v want:%v", token, balance, decodedVolume)
 	}
 	return nil
 }
