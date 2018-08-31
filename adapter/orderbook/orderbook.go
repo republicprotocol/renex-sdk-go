@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -56,9 +57,8 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 }
 
 func (adapter *adapter) RequestOpenOrder(order order.Order) error {
-	balance, err := adapter.funds.UsableRenExBalance(getTokenCode(order))
-	if balance.Uint64() < order.Volume {
-		return fmt.Errorf("Order volume exceeded usable balance have:%d want:%d", balance.Uint64(), order.Volume)
+	if err := adapter.BalanceCheck(order); err != nil {
+		return err
 	}
 
 	mapping, err := adapter.buildOrderMapping(order)
@@ -235,7 +235,21 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 	return orderFragmentMapping, nil
 }
 
+func (adapter *adapter) BalanceCheck(order order.Order) error {
+	token := getTokenCode(order)
+	balance, err := adapter.funds.UsableRenExBalance(token)
+	if err != nil {
+		return err
+	}
+	decodedVolume := decodeVolume(token, order.Volume)
+	if balance.Cmp(decodedVolume) >= 0 {
+		return fmt.Errorf("Order volume exceeded usable balance have:%v want:%v", balance, decodedVolume)
+	}
+	return nil
+}
+
 func getTokenCode(ord order.Order) order.Token {
+
 	if ord.Parity == 0 {
 		return ord.Tokens.PriorityToken()
 	}
@@ -251,4 +265,17 @@ func toBytes65(b []byte) ([65]byte, error) {
 		bytes65[i] = b[i]
 	}
 	return bytes65, nil
+}
+
+func decodeVolume(token order.Token, volume uint64) *big.Int {
+	switch token {
+	case order.TokenABC:
+		return big.NewInt(int64(volume))
+	case order.TokenDGX:
+		return big.NewInt(int64(volume) / 1000)
+	case order.TokenBTC:
+		return big.NewInt(int64(volume) / 10000)
+	default:
+		return big.NewInt(int64(volume)).Mul(big.NewInt(int64(volume)), big.NewInt(1000000))
+	}
 }
