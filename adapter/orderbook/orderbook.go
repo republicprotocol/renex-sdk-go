@@ -242,15 +242,14 @@ func (adapter *adapter) BalanceCheck(order order.Order) error {
 		return err
 	}
 	decodedVolume := decodeVolume(token, order.Volume)
-	if balance.Cmp(decodedVolume) >= 0 {
+	if balance.Cmp(decodedVolume) < 0 {
 		return fmt.Errorf("Order volume exceeded usable balance have:%v want:%v", balance, decodedVolume)
 	}
 	return nil
 }
 
 func getTokenCode(ord order.Order) order.Token {
-
-	if ord.Parity == 0 {
+	if ord.Parity == order.ParityBuy {
 		return ord.Tokens.PriorityToken()
 	}
 	return ord.Tokens.NonPriorityToken()
