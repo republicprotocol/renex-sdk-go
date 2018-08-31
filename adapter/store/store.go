@@ -3,7 +3,6 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/big"
 	"sync"
 
@@ -49,7 +48,6 @@ func (store *store) RequestLockedBalance(tokenCode order.Token) (*big.Int, error
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Got the open orders")
 	balance := int64(0)
 	for _, ord := range ords {
 		balance += int64(ord.Volume)
@@ -80,7 +78,6 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 	if err := json.Unmarshal(data, &orderList); err != nil {
 		return nil, err
 	}
-	fmt.Println("unmarshaled the open orders")
 
 	orders := []order.Order{}
 	for _, id := range orderList.ids {
@@ -92,7 +89,6 @@ func (store *store) openOrders(tokenCode order.Token) ([]order.Order, error) {
 			orders = append(orders, ord)
 		}
 	}
-	fmt.Println("open orders", len(orders))
 
 	return orders, nil
 }

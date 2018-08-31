@@ -77,13 +77,11 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 	buf := bytes.NewBuffer(data)
 
-	fmt.Println("Waiting for the post response")
 	resp, err := http.DefaultClient.Post(fmt.Sprintf("%s/orders", adapter.httpAddress), "application/json", buf)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Println("Recieved the post response")
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -178,7 +176,6 @@ func (adapter *adapter) Settled(id order.ID) (bool, error) {
 }
 
 func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderFragmentMapping, error) {
-	fmt.Println("Starting to build order mapping")
 	pods, err := adapter.republicBinder.Pods()
 	if err != nil {
 		return nil, err
@@ -187,7 +184,6 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 	orderFragmentMapping := httpadapter.OrderFragmentMapping{}
 
 	for _, pod := range pods {
-		fmt.Println("For pod:", pod.Position)
 		n := int64(len(pod.Darknodes))
 		k := int64(2 * (len(pod.Darknodes) + 1) / 3)
 		hash := base64.StdEncoding.EncodeToString(pod.Hash[:])
@@ -197,7 +193,6 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 		}
 		orderFragmentMapping[hash] = []httpadapter.OrderFragment{}
 		for i, ordFragment := range ordFragments {
-			fmt.Println("Order Fragment:", i)
 			marshaledOrdFragment := httpadapter.OrderFragment{
 				Index: int64(i + 1),
 			}
