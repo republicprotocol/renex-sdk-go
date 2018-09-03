@@ -134,7 +134,7 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 
 func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error) {
 	req := httpadapter.ApproveWithdrawalRequest{
-		Trader:  adapter.trader.Address().String(),
+		Trader:  adapter.trader.Address().String()[2:],
 		TokenID: uint32(tokenCode),
 	}
 
