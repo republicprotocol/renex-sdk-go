@@ -136,7 +136,8 @@ func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, erro
 	statuses := make([]order.Status, 0, orderCount)
 
 	start := 0
-	if orderCount < 500 {
+	limit := 500
+	if orderCount < limit {
 		return adapter.republicBinder.Orders(0, orderCount)
 	}
 
@@ -144,14 +145,14 @@ func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, erro
 		if orderCount-start < 0 {
 			return orderIDs, statuses, addresses, nil
 		}
-		orderIDValues, statusValues, addressValues, err := adapter.republicBinder.Orders(0, orderCount)
+		orderIDValues, statusValues, addressValues, err := adapter.republicBinder.Orders(start, limit)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 		orderIDs = append(orderIDs, orderIDValues...)
 		addresses = append(addresses, addressValues...)
 		statuses = append(statuses, statusValues...)
-		start = start + 500
+		start += limit
 	}
 }
 
