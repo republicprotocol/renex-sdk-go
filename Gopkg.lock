@@ -119,6 +119,17 @@
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:2106821001befed6a5783b54950030dd0614257d18bef539e46cae9afd02b89b"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid",
+  ]
+  pruneopts = "T"
+  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:130cefe87d7eeefc824978dcb78e35672d4c49a11f25c153fbf0cfd952756fa3"
   name = "github.com/minio/blake2b-simd"
@@ -168,14 +179,14 @@
 
 [[projects]]
   branch = "contract-upgrades"
-  digest = "1:cf31d6bc8fdeada4a368e91e809efe72cd69dd65c59a90a102c5dde05d167fa1"
+  digest = "1:c55b2ad97a9ecd6ef7ec83ec3b5161b192013ab280b02726a2a1dd94d5aed0db"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "d1d59304f007543c65193911472716463dfe3565"
+  revision = "fb25f2d94828999d098a923cc488a62aa612cc20"
 
 [[projects]]
   branch = "nightly"
@@ -246,7 +257,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:da29cbeb9d244918393b37243c008ab7128688fb017c966aaf876587c010bcdd"
+  digest = "1:490cbeb7a0a743de4cc0058a6d13ef6772c4d1e3d4d36a8f0428d3c5114012ff"
   name = "golang.org/x/crypto"
   packages = [
     "blake2s",
@@ -256,7 +267,7 @@
     "sha3",
   ]
   pruneopts = "T"
-  revision = "182538f80094b6a8efaade63a8fd8e0d9d5843dd"
+  revision = "0709b304e793a5edb4a2c0145f281ecdc20838a4"
 
 [[projects]]
   branch = "master"
@@ -290,7 +301,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:48881a3e1353058a0aa4c428c1e030e6e082c048610980f5eb2f103732f44a3c"
+  digest = "1:dbc233c3e91caaf82db96f3bc5fcd5aa783f7b645022fd4ffc471e36f06df946"
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
@@ -298,7 +309,7 @@
     "internal/fastwalk",
   ]
   pruneopts = "T"
-  revision = "7ca132754999accbaa5c1735eda29e7ce0f3bf03"
+  revision = "0aa4b8830f481fed77b73cf7cea2bc3129e05148"
 
 [[projects]]
   digest = "1:3ccd10c863188cfe0d936fcfe6a055c95362e43af8e7039e33baade846928e74"
