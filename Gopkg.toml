@@ -30,7 +30,7 @@
   version = "=1.8.12"
 
 [[constraint]]
-  branch = "contract-upgrades"
+  branch = "nightly"
   name = "github.com/republicprotocol/republic-go"
 
 [[constraint]]
