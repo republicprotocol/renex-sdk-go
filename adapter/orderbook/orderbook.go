@@ -88,20 +88,20 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	// type Response struct {
-	// 	Signature string `json:"signature"`
-	// }
+	type Response struct {
+		Signature string `json:"signature"`
+	}
 
-	// respose := Response{}
-	// if err := json.Unmarshal(respBytes, respose); err != nil {
-	// 	return err
-	// }
+	response := Response{}
+	if err := json.Unmarshal(respBytes, response); err != nil {
+		return err
+	}
 
 	if resp.StatusCode != 201 {
 		return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 	}
 
-	sigBytes, err := base64.StdEncoding.DecodeString(string(respBytes))
+	sigBytes, err := base64.StdEncoding.DecodeString(response.Signature)
 	if err != nil {
 		return err
 	}

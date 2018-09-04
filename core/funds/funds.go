@@ -47,13 +47,6 @@ func NewService(adapter Adapter) Funds {
 }
 
 func (service *service) Withdraw(token order.Token, value *big.Int, forced bool, key *IdempotentKey) (*IdempotentKey, error) {
-	exists, err := service.OpenOrdersExist(token)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, fmt.Errorf("Withdrawal failed due to the existance of pending orders")
-	}
 	switch service.CheckStatus(key) {
 	case 0:
 		sig, err := service.RequestWithdrawalSignature(token, value)
