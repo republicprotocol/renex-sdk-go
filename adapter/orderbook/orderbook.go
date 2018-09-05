@@ -93,7 +93,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 
 	response := Response{}
-	if err := json.Unmarshal(respBytes, response); err != nil {
+	if err := json.Unmarshal(respBytes, &response); err != nil {
 		return err
 	}
 
