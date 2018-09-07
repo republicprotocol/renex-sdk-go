@@ -69,7 +69,7 @@ func GetNetwork(network string) (Network, error) {
 			RenExBalancesAddress:    "0xb3E632943fA995FC75692e46b62383BE49cDdbc4",
 			RenExSettlementAddress:  "0xBE936cb23DD9a84E4D9358810f7F275e93CCD770",
 			RenExAtomicInfoAddress:  "0xafe5539B40b17404E3cB6cf5013FC7daB3c54163",
-			RenExTokensAddress:      "0xb8bf2497639C95E203195CC9F333510a0D99c716",
+			RenExTokensAddress:      "0x9a898c8148131eF189B1c8575692376403780325",
 		}, nil
 	case "nightly":
 		return Network{
