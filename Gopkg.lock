@@ -127,6 +127,17 @@
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:2106821001befed6a5783b54950030dd0614257d18bef539e46cae9afd02b89b"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid",
+  ]
+  pruneopts = "T"
+  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:130cefe87d7eeefc824978dcb78e35672d4c49a11f25c153fbf0cfd952756fa3"
   name = "github.com/minio/blake2b-simd"
@@ -176,14 +187,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:129d3f5f7fb7be12c58cf7e517580fdb721f033e0925edc13a1ca7d14499681b"
+  digest = "1:08739cec0f1d03696c7a1da9897569919f2544dc680c0cb0e21e653f35a5eb08"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "a68a6021b43dcf8c4cd3fdb18dd9c775eccc1b61"
+  revision = "62edda3cc39f779eeca9075836126c4ff1b7e3ee"
 
 [[projects]]
   branch = "develop"
@@ -270,7 +281,10 @@
   branch = "master"
   digest = "1:2584347a8e1438435975f69490a9aff755899d57f9afc67798cd2ae49ac16aaf"
   name = "golang.org/x/net"
-  packages = ["websocket"]
+  packages = [
+    "context",
+    "websocket",
+  ]
   pruneopts = "T"
   revision = "161cd47e91fd58ac17490ef4d742dc98bb4cf60e"
 
@@ -284,6 +298,14 @@
   ]
   pruneopts = "T"
   revision = "917fdcba135dcbaccd57425db91723541b4427c8"
+
+[[projects]]
+  branch = "master"
+  digest = "1:59a73243379bd5412feb268ec3d9ec0c55acb596ce15fdf937ec29ea6dab441f"
+  name = "golang.org/x/time"
+  packages = ["rate"]
+  pruneopts = "T"
+  revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
 
 [[projects]]
   branch = "master"
