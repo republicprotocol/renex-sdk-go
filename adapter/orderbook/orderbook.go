@@ -33,8 +33,8 @@ type adapter struct {
 	store                   store.Store
 }
 
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store) (orderbook.Adapter, error) {
-	conn, err := contract.Connect(contract.Config{Network: contract.NetworkNightly})
+func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string) (orderbook.Adapter, error) {
+	conn, err := contract.Connect(contract.Config{Network: contract.Network(network)})
 	if err != nil {
 		return nil, err
 	}
