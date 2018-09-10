@@ -187,14 +187,14 @@
 
 [[projects]]
   branch = "nightly"
-  digest = "1:e47b99f5092a2a830bb98f4d5ade0a825bbbcc1675c9dc8158e4195520e242cd"
+  digest = "1:2c5a9dbfcf5ed147ea6b838deaae966801d500a58cd4b1421903b67ecd45dcd4"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "ae32d7435a4ccc856ae3a4eec258403a616bf988"
+  revision = "177be9fd4634e33ac134f6e57fb003e8651c82e6"
 
 [[projects]]
   branch = "nightly"

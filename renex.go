@@ -56,7 +56,7 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 
 	fService := funds.NewService(fAdapter)
 
-	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, newTrader, fService, newStore)
+	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, newTrader, fService, newStore, network)
 	if err != nil {
 		return RenEx{}, err
 	}
