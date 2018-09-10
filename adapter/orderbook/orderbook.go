@@ -83,6 +83,10 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 	defer resp.Body.Close()
 
+	if !(resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK) {
+		return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
+	}
+
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -95,10 +99,6 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	response := Response{}
 	if err := json.Unmarshal(respBytes, &response); err != nil {
 		return err
-	}
-
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("Unexpected status code %d", resp.StatusCode)
 	}
 
 	sigBytes, err := base64.StdEncoding.DecodeString(response.Signature)
