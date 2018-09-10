@@ -164,7 +164,7 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 	}
 
 	response := Response{}
-	if err := json.Unmarshal(respBytes, response); err != nil {
+	if err := json.Unmarshal(respBytes, &response); err != nil {
 		return nil, err
 	}
 
