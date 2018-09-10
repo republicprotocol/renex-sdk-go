@@ -155,17 +155,17 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 		return nil, err
 	}
 
+	if !(resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK) {
+		return nil, fmt.Errorf("Unexpected status code %d: %s %s", resp.StatusCode, resp.Status, string(respBytes))
+	}
+
 	type Response struct {
 		Signature string `json:"signature"`
 	}
 
 	response := Response{}
-	if err := json.Unmarshal(respBytes, response); err != nil {
+	if err := json.Unmarshal(respBytes, &response); err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 201 {
-		return nil, fmt.Errorf("Unexpected status code %d: %s %s", resp.StatusCode, resp.Status, string(respBytes))
 	}
 
 	return base64.StdEncoding.DecodeString(response.Signature)

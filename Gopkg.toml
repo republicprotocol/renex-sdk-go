@@ -34,7 +34,7 @@
   name = "github.com/republicprotocol/republic-go"
 
 [[constraint]]
-  branch = "contract-upgrades"
+  branch = "nightly"
   name = "github.com/republicprotocol/renex-ingress-go"
 
 # Fix to resolve dependency issues within go-ethereum
