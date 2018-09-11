@@ -98,6 +98,8 @@ func (service *service) Transfer(address string, tokenCode order.Token, value *b
 		return service.TransferERC20(address, tokenCode, value)
 	case order.TokenABC:
 		return service.TransferERC20(address, tokenCode, value)
+	case order.TokenPQR:
+		return service.TransferERC20(address, tokenCode, value)
 	case order.TokenXYZ:
 		return service.TransferERC20(address, tokenCode, value)
 	case order.TokenETH:
@@ -114,6 +116,8 @@ func (service *service) Balance(tokenCode order.Token) (*big.Int, error) {
 	case order.TokenDGX:
 		return service.BalanceErc20(tokenCode)
 	case order.TokenABC:
+		return service.BalanceErc20(tokenCode)
+	case order.TokenPQR:
 		return service.BalanceErc20(tokenCode)
 	case order.TokenXYZ:
 		return service.BalanceErc20(tokenCode)
