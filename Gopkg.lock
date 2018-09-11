@@ -186,18 +186,18 @@
   version = "v1.2"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:516557528fd5169536ad32252d8a2465b3c621617d8078764b63a2690cce77d4"
+  branch = "master"
+  digest = "1:02b478afdf6a12d5f74cceb3b2b84ea9c73ae850edf1cb5b455540c32349cffa"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "4a6f9a202ca101469ef347531d6f60cc67f7f790"
+  revision = "f73fd082c7fb5dfb5f9f777558a1bca2b247ca3c"
 
 [[projects]]
-  branch = "develop"
+  branch = "master"
   digest = "1:c64b099a84d5a97a83bcebe1a8a0f4929629258f04b8bacee90031ebecd9f980"
   name = "github.com/republicprotocol/republic-go"
   packages = [
