@@ -96,11 +96,11 @@ func (service *service) Transfer(address string, tokenCode order.Token, value *b
 		return service.TransferERC20(address, tokenCode, value)
 	case order.TokenDGX:
 		return service.TransferERC20(address, tokenCode, value)
-	case order.TokenTUSD:
+	case order.TokenABC:
 		return service.TransferERC20(address, tokenCode, value)
-	case order.TokenZRX:
+	case order.TokenPQR:
 		return service.TransferERC20(address, tokenCode, value)
-	case order.TokenOMG:
+	case order.TokenXYZ:
 		return service.TransferERC20(address, tokenCode, value)
 	case order.TokenETH:
 		return service.TransferEth(address, value)
@@ -115,11 +115,11 @@ func (service *service) Balance(tokenCode order.Token) (*big.Int, error) {
 		return service.BalanceErc20(tokenCode)
 	case order.TokenDGX:
 		return service.BalanceErc20(tokenCode)
-	case order.TokenTUSD:
+	case order.TokenABC:
 		return service.BalanceErc20(tokenCode)
-	case order.TokenZRX:
+	case order.TokenPQR:
 		return service.BalanceErc20(tokenCode)
-	case order.TokenOMG:
+	case order.TokenXYZ:
 		return service.BalanceErc20(tokenCode)
 	case order.TokenETH:
 		return service.BalanceEth()
