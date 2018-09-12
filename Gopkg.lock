@@ -186,18 +186,18 @@
   version = "v1.2"
 
 [[projects]]
-  branch = "master"
-  digest = "1:d65c367c6b0ac6f438730728bd2da41be2f949e8a5114b2fe9101a33b3355357"
+  branch = "develop"
+  digest = "1:516557528fd5169536ad32252d8a2465b3c621617d8078764b63a2690cce77d4"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "339d6e9f3e35844ee9f8d3b3b428b5c0e4e2d150"
+  revision = "4a6f9a202ca101469ef347531d6f60cc67f7f790"
 
 [[projects]]
-  branch = "master"
+  branch = "develop"
   digest = "1:19a5a24f327153de2d6ed4dd593799357378f25b5b514510ac662cc0fa45d126"
   name = "github.com/republicprotocol/republic-go"
   packages = [
@@ -279,14 +279,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2584347a8e1438435975f69490a9aff755899d57f9afc67798cd2ae49ac16aaf"
+  digest = "1:a42c6aed51ed8b42dae608760a24ce53b799ede0c31637dfcbf1116cd0c23b03"
   name = "golang.org/x/net"
   packages = [
     "context",
     "websocket",
   ]
   pruneopts = "T"
-  revision = "161cd47e91fd58ac17490ef4d742dc98bb4cf60e"
+  revision = "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 
 [[projects]]
   branch = "master"
@@ -309,7 +309,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e25487f99b5bbf2fec13fb7a91cf292f42941552ca732f3eef93f5a1295c4adc"
+  digest = "1:4fb0ad32f68e6e42e39f3415d21b2aedf775068712c09d10d5fbf1a06afb40cc"
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
@@ -317,7 +317,7 @@
     "internal/fastwalk",
   ]
   pruneopts = "T"
-  revision = "18207bb12d3a3338e74403fed8ca1ba866dd3a57"
+  revision = "677d2ff680c188ddb7dcd2bfa6bc7d3f2f2f75b2"
 
 [[projects]]
   digest = "1:3ccd10c863188cfe0d936fcfe6a055c95362e43af8e7039e33baade846928e74"
