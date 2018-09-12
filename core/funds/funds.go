@@ -105,7 +105,7 @@ func (service *service) Transfer(address string, tokenCode order.Token, value *b
 	case order.TokenETH:
 		return service.TransferEth(address, value)
 	default:
-		return fmt.Errorf("Unsupported Currency")
+		return fmt.Errorf("unsupported currency")
 	}
 }
 
@@ -124,6 +124,6 @@ func (service *service) Balance(tokenCode order.Token) (*big.Int, error) {
 	case order.TokenETH:
 		return service.BalanceEth()
 	default:
-		return nil, fmt.Errorf("Unsupported Currency")
+		return nil, fmt.Errorf("unsupported currency")
 	}
 }

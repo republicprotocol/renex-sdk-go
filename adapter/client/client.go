@@ -53,12 +53,12 @@ func GetNetwork(network string) (Network, error) {
 		return Network{
 			URL:   "https://kovan.infura.io",
 			Chain: "kovan",
-			DarknodeRegistryAddress: "",
-			OrderbookAddress:        "",
-			RenExBalancesAddress:    "",
-			RenExSettlementAddress:  "",
-			RenExAtomicInfoAddress:  "",
-			RenExTokensAddress:      "",
+			DarknodeRegistryAddress: "0xd1c3b5f2fe4eec6c262a5e1b161e5e099fd8325e",
+			OrderbookAddress:        "0x9a016649d97d44a055c26cbcadbc45a1ac563c89",
+			RenExBalancesAddress:    "0x99df4A01731B876A6b43A9A6873D080C29992D63",
+			RenExSettlementAddress:  "0x68FE2088A321A42DE11Aba93D32C81C9f20b1Abe",
+			RenExAtomicInfoAddress:  "0xD5757DB061B1aDD0dCBf6B9dD3849E98eAEF408a",
+			RenExTokensAddress:      "0x0649B5dFCA237d67e72508333616E4cD330c6f89",
 		}, nil
 	case "falcon":
 		return Network{
