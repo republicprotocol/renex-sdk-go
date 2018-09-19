@@ -187,14 +187,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:285b7fae315527135c76044e56bd18f57f9386ee7d10e75e0f60a09db115d2da"
+  digest = "1:2157c93dc2a52b656df603d97609204ac73f466e3baa203962536e23a8b66f0e"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "f592e61d79608a41b6a41a7254a4855d68972402"
+  revision = "6f034a9af9cf016d9c3671d90dda6d4af6f72a9f"
 
 [[projects]]
   branch = "develop"
