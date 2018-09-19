@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/republicprotocol/republic-go/shamir"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -65,6 +66,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	if err != nil {
 		return err
 	}
+
 
 	req := httpadapter.OpenOrderRequest{
 		Address:               adapter.trader.Address().String()[2:],
@@ -176,7 +178,7 @@ func (adapter *adapter) Settled(id order.ID) (bool, error) {
 	return det.Settled, nil
 }
 
-func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderFragmentMapping, error) {
+func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFragmentMapping, error) {
 	pods, err := adapter.republicBinder.Pods()
 	if err != nil {
 		return nil, err
@@ -188,11 +190,26 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 		n := int64(len(pod.Darknodes))
 		k := int64(2 * (len(pod.Darknodes) + 1) / 3)
 		hash := base64.StdEncoding.EncodeToString(pod.Hash[:])
-		ordFragments, err := order.Split(n, k)
+		ordFragments, err := ord.Split(n, k)
 		if err != nil {
 			return nil, err
 		}
 		orderFragmentMapping[hash] = []httpadapter.OrderFragment{}
+
+		// Get commitments of all the fragments
+		commitments := map[uint64]order.FragmentCommitment{}
+		for i, ordFragment := range ordFragments{
+			commitment := order.FragmentCommitment{
+				PriceCo: shamir.NewCommitment(ordFragment.Price.Co, ordFragment.Blinding),
+				PriceExp: shamir.NewCommitment(ordFragment.Price.Exp, ordFragment.Blinding),
+				VolumeCo: shamir.NewCommitment(ordFragment.Volume.Co, ordFragment.Blinding),
+				VolumeExp: shamir.NewCommitment(ordFragment.Volume.Exp, ordFragment.Blinding),
+				MinimumVolumeCo: shamir.NewCommitment(ordFragment.MinimumVolume.Co, ordFragment.Blinding),
+				MinimumVolumeExp: shamir.NewCommitment(ordFragment.MinimumVolume.Co, ordFragment.Blinding),
+			}
+			commitments[uint64(i+1)] = commitment
+		}
+
 		for i, ordFragment := range ordFragments {
 			marshaledOrdFragment := httpadapter.OrderFragment{
 				Index: int64(i + 1),
@@ -202,7 +219,6 @@ func (adapter *adapter) buildOrderMapping(order order.Order) (httpadapter.OrderF
 			if err != nil {
 				return nil, err
 			}
-
 			encryptedFragment, err := ordFragment.Encrypt(pubKey)
 			marshaledOrdFragment.ID = base64.StdEncoding.EncodeToString(encryptedFragment.ID[:])
 			marshaledOrdFragment.OrderID = base64.StdEncoding.EncodeToString(encryptedFragment.OrderID[:])
