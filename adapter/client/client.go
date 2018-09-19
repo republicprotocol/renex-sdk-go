@@ -55,7 +55,7 @@ func GetNetwork(network string) (Network, error) {
 			Chain: "kovan",
 			DarknodeRegistryAddress: "0xf7daA0Baf257547A6Ad3CE7FFF71D55cb7426F76",
 			OrderbookAddress:        "0xA53Da4093c682a4259DE38302341BFEf7e9f7a4f",
-			RenExBalancesAddress:    "0x003d49e656814afbe525adb03f297842ddc76e89",
+			RenExBalancesAddress:    "0x97073d0d654ebb71dd9efd1dfa777c73f56d4021",
 			RenExSettlementAddress:  "0x68FE2088A321A42DE11Aba93D32C81C9f20b1Abe",
 			RenExAtomicInfoAddress:  "0xD5757DB061B1aDD0dCBf6B9dD3849E98eAEF408a",
 			RenExTokensAddress:      "0xedFF6E7C072fA0018720734F6d5a4f4DC30f9869",
