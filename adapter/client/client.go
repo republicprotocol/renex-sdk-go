@@ -49,6 +49,17 @@ type client struct {
 
 func GetNetwork(network string) (Network, error) {
 	switch network {
+	case "mainnet":
+		return Network{
+			URL:   "https://mainnet.infura.io",
+			Chain: "mainnet",
+			DarknodeRegistryAddress: "",
+			OrderbookAddress:        "",
+			RenExBalancesAddress:    "",
+			RenExSettlementAddress:  "",
+			RenExAtomicInfoAddress:  "",
+			RenExTokensAddress:      "",
+		}, nil
 	case "testnet":
 		return Network{
 			URL:   "https://kovan.infura.io",
