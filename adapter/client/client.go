@@ -53,7 +53,7 @@ func GetNetwork(network string) (Network, error) {
 		return Network{
 			URL:   "https://mainnet.infura.io",
 			Chain: "mainnet",
-			DarknodeRegistryAddress: "",
+			DarknodeRegistryAddress: "0x3799006a87fde3ccfc7666b3e6553b03ed341c2f",
 			OrderbookAddress:        "",
 			RenExBalancesAddress:    "",
 			RenExSettlementAddress:  "",
