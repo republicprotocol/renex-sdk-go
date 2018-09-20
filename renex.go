@@ -1,6 +1,7 @@
 package renex
 
 import (
+	"crypto/ecdsa"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -23,11 +24,20 @@ type RenEx struct {
 }
 
 func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
-	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 	newTrader, err := trader.NewTrader(keystorePath, passphrase)
 	if err != nil {
 		return RenEx{}, err
 	}
+	return newRenEx(network, newTrader)
+}
+
+func NewRenExWithPrivKey(network string, privKey *ecdsa.PrivateKey) (RenEx, error) {
+	return newRenEx(network, trader.NewTraderFromPrivateKey(privKey))
+}
+
+func newRenEx(network string, t trader.Trader) (RenEx, error) {
+
+	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 
 	newClient, err := client.NewClient(network)
 	if err != nil {
@@ -49,14 +59,14 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 		return RenEx{}, err
 	}
 
-	fAdapter, err := fundsAdapter.NewAdapter(ingressAddress, newClient, newTrader, newStore)
+	fAdapter, err := fundsAdapter.NewAdapter(ingressAddress, newClient, t, newStore)
 	if err != nil {
 		return RenEx{}, err
 	}
 
 	fService := funds.NewService(fAdapter)
 
-	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, newTrader, fService, newStore, network)
+	oAdapter, err := obAdapter.NewAdapter(ingressAddress, newClient, t, fService, newStore, network)
 	if err != nil {
 		return RenEx{}, err
 	}
@@ -65,4 +75,5 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 		orderbook.NewService(oAdapter),
 		fService,
 	}, nil
+
 }
