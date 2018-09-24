@@ -11,11 +11,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f2d4beb3a1f1d5c59ed38864724bb098952c6230a22a226b30b8cb1dcb8daf79"
+  digest = "1:e599801f29de116faca9d3c1937c0f03c7629de72dab7365684179068d2cd315"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   pruneopts = "T"
-  revision = "cff30e1d23fc9e800b2b5b4b41ef1817dda07e9f"
+  revision = "2a560b2036bee5e3679ec2133eb6520b2f195213"
 
 [[projects]]
   digest = "1:fed1f537c2f1269fe475a8556c393fe466641682d73ef8fd0491cd3aa1e47bad"
@@ -171,11 +171,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:25adb195c50fff1666779f4f3cb88fc04ff789aa83929a9da8ade0ae4863bcc1"
+  digest = "1:f8a9ee1594aa4a39d11a82f0524f94189c4c5c7e0e0d4614d80afa4358f36f7e"
   name = "github.com/mr-tron/base58"
   packages = ["base58"]
   pruneopts = "T"
-  revision = "cee214dccb3e8160bdf79ed48a851f3a95a124ff"
+  revision = "9ad991d48a423a0e52c77eac173b1b589665492a"
 
 [[projects]]
   branch = "master"
@@ -211,18 +211,18 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:b8b1bb2ad3bf6776251c221e51c831f2c80bb5ae595d31fc7dd23281876dae8c"
+  digest = "1:3cd23ba7e97e5e7f4109138130be6d7332cd7b48765343b1303beb623dab2b83"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "c6342e7d919b3581165afd55867535e7ad99901f"
+  revision = "98436a1e847f1e450e3a9ef34d50b203256cf908"
 
 [[projects]]
   branch = "develop"
-  digest = "1:6417be99ddc44f2d1fd4c11dc6500af069db7c2277b1e9198d550799359533e0"
+  digest = "1:8c749ea14767f9310a17bc9105bbb9a03cabbdb561aabd7a815e917941c5c308"
   name = "github.com/republicprotocol/republic-go"
   packages = [
     "contract",
@@ -240,7 +240,7 @@
     "swarm",
   ]
   pruneopts = "T"
-  revision = "133e2b7e524ec39fb8336e2b1352898570f92ca0"
+  revision = "30d41f48892081094521e8af320eee617a908517"
 
 [[projects]]
   digest = "1:602081d2a289d1f76ea90b806b0c61c19038d76504e9005ccb969864dbaee339"
@@ -303,25 +303,25 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a42c6aed51ed8b42dae608760a24ce53b799ede0c31637dfcbf1116cd0c23b03"
+  digest = "1:0d3b3ce2b76e0d10fc5e804e51a92c4466b05a92de06e61e96d7035deab04c41"
   name = "golang.org/x/net"
   packages = [
     "context",
     "websocket",
   ]
   pruneopts = "T"
-  revision = "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
+  revision = "2f5d2388922f370f4355f327fcf4cfe9f5583908"
 
 [[projects]]
   branch = "master"
-  digest = "1:76e0759f6c8926e0d17d6276a8b05cf853975b1a9ec30979569f5ee3341a6326"
+  digest = "1:3e9bd94639076b465dc569efb3a36be8569d2366c426b7f1143ad3ff8395b48a"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "T"
-  revision = "1561086e645b2809fb9f8a1e2a38160bf8d53bf4"
+  revision = "d47a0f3392421c5624713c9a19fe781f651f8a50"
 
 [[projects]]
   branch = "master"
