@@ -53,12 +53,11 @@ func GetNetwork(network string) (Network, error) {
 		return Network{
 			URL:   "https://mainnet.infura.io",
 			Chain: "mainnet",
-			DarknodeRegistryAddress: "",
-			OrderbookAddress:        "",
-			RenExBalancesAddress:    "",
-			RenExSettlementAddress:  "",
-			RenExAtomicInfoAddress:  "",
-			RenExTokensAddress:      "",
+			DarknodeRegistryAddress: "0x3799006a87fde3ccfc7666b3e6553b03ed341c2f",
+			OrderbookAddress:        "0x6b8bb175c092de7d81860b18db360b734a2598e0",
+			RenExBalancesAddress:    "0x9636f9ac371ca0965b7c2b4ad13c4cc64d0ff2dc",
+			RenExSettlementAddress:  "0x908262de0366e42d029b0518d5276762c92b21e1",
+			RenExTokensAddress:      "0x7cade4fbc8761817bb62a080733d1b6cad744ec4",
 		}, nil
 	case "testnet":
 		return Network{
@@ -66,9 +65,8 @@ func GetNetwork(network string) (Network, error) {
 			Chain: "kovan",
 			DarknodeRegistryAddress: "0xf7daA0Baf257547A6Ad3CE7FFF71D55cb7426F76",
 			OrderbookAddress:        "0xA53Da4093c682a4259DE38302341BFEf7e9f7a4f",
-			RenExBalancesAddress:    "0x003d49e656814afbe525adb03f297842ddc76e89",
+			RenExBalancesAddress:    "0x97073d0d654ebb71dd9efd1dfa777c73f56d4021",
 			RenExSettlementAddress:  "0x68FE2088A321A42DE11Aba93D32C81C9f20b1Abe",
-			RenExAtomicInfoAddress:  "0xD5757DB061B1aDD0dCBf6B9dD3849E98eAEF408a",
 			RenExTokensAddress:      "0xedFF6E7C072fA0018720734F6d5a4f4DC30f9869",
 		}, nil
 	case "falcon":
@@ -79,7 +77,6 @@ func GetNetwork(network string) (Network, error) {
 			OrderbookAddress:        "0x592d16f8C5FA8f1E074ab3C2cd1ACD087ADcdc0B",
 			RenExBalancesAddress:    "0xb3E632943fA995FC75692e46b62383BE49cDdbc4",
 			RenExSettlementAddress:  "0xBE936cb23DD9a84E4D9358810f7F275e93CCD770",
-			RenExAtomicInfoAddress:  "0xafe5539B40b17404E3cB6cf5013FC7daB3c54163",
 			RenExTokensAddress:      "0x9a898c8148131eF189B1c8575692376403780325",
 		}, nil
 	case "nightly":
@@ -90,7 +87,6 @@ func GetNetwork(network string) (Network, error) {
 			OrderbookAddress:        "0x376127aDc18260fc238eBFB6626b2F4B59eC9b66",
 			RenExBalancesAddress:    "0xa95dE870dDFB6188519D5CC63CEd5E0FBac1aa8E",
 			RenExSettlementAddress:  "0x5f25233ca99104D31612D4fB937B090d5A2EbB75",
-			RenExAtomicInfoAddress:  "0xe1A660657A32053fe83B19B1177F6B56C6F37b1f",
 			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
 		}, nil
 	default:
