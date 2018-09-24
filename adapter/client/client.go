@@ -154,6 +154,7 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big
 	if err != nil {
 		return err
 	}
+	from.Nonce.Add(transactor.Nonce, big.NewInt(1))
 	_, err = b.WaitTillMined(context.Background(), tx)
 	return err
 }
