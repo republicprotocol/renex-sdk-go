@@ -277,15 +277,15 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:3cd23ba7e97e5e7f4109138130be6d7332cd7b48765343b1303beb623dab2b83"
+  branch = "nightly"
+  digest = "1:9701b2997d92ae64b4c0823bf1e9f557cb7b7d6d183d11e73307956f79c0c8e4"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "98436a1e847f1e450e3a9ef34d50b203256cf908"
+  revision = "ea8da8ecf82dd9b5743425c912ae73e8381d0b28"
 
 [[projects]]
   branch = "develop"
@@ -311,8 +311,8 @@
   revision = "4599b48ba138ce5e14e20a91f9b6b03ed0e96414"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:8c749ea14767f9310a17bc9105bbb9a03cabbdb561aabd7a815e917941c5c308"
+  branch = "nightly"
+  digest = "1:083a5ca31f36fc4f3585cb18371e1e867c87db826f1d57fdb95ac9e25e95bb26"
   name = "github.com/republicprotocol/republic-go"
   packages = [
     "contract",
@@ -330,7 +330,7 @@
     "swarm",
   ]
   pruneopts = "T"
-  revision = "30d41f48892081094521e8af320eee617a908517"
+  revision = "8bbf369f9cd58546bf2183ab278982c9669c552a"
 
 [[projects]]
   digest = "1:602081d2a289d1f76ea90b806b0c61c19038d76504e9005ccb969864dbaee339"
