@@ -142,6 +142,12 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big
 		Context:  from.Context,
 	}
 
+	nonce, err := b.Client().PendingNonceAt(context.Background(), transactor.From)
+	if err != nil {
+
+	}
+	transactor.Nonce = big.NewInt(int64(nonce))
+
 	// Why is there no ethclient.Transfer?
 	bound := bind.NewBoundContract(to, abi.ABI{}, nil, b.client, nil)
 	tx, err := bound.Transfer(transactor)
