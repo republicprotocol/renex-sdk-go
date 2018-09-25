@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -142,9 +143,9 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big
 		Context:  from.Context,
 	}
 
-	nonce, err := b.Client().PendingNonceAt(context.Background(), transactor.From)
-	if err != nil {
-
+	nonce, nonceErr := b.Client().PendingNonceAt(context.Background(), transactor.From)
+	if nonceErr != nil {
+		return fmt.Errorf("cannot get nonce: %v", nonceErr)
 	}
 	transactor.Nonce = big.NewInt(int64(nonce))
 
@@ -152,8 +153,24 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big
 	bound := bind.NewBoundContract(to, abi.ABI{}, nil, b.client, nil)
 	tx, err := bound.Transfer(transactor)
 	if err != nil {
-		return err
+		for try := 0; try < 60 && strings.Contains(err.Error(), "nonce"); try++ {
+			time.Sleep(time.Second)
+			nonce, nonceErr = b.Client().PendingNonceAt(context.Background(), transactor.From)
+			if nonceErr != nil {
+				continue
+			}
+			transactor.Nonce = big.NewInt(int64(nonce))
+			tx, err = bound.Transfer(transactor)
+			if err == nil {
+				break
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
+	from.Nonce = big.NewInt(0).Add(transactor.Nonce, big.NewInt(1))
+
 	_, err = b.WaitTillMined(context.Background(), tx)
 	return err
 }
@@ -169,20 +186,14 @@ func (b *client) WaitTillMined(ctx context.Context, tx *types.Transaction) (*typ
 		time.Sleep(100 * time.Millisecond)
 		return nil, nil
 	default:
-		if b.client == nil {
-			return nil, fmt.Errorf("Nil Client")
-		}
-		if tx == nil {
-			return nil, fmt.Errorf("Nil Tx")
-		}
-		reciept, err := bind.WaitMined(ctx, b.client, tx)
+		receipt, err := bind.WaitMined(ctx, b.client, tx)
 		if err != nil {
 			return nil, err
 		}
-		if reciept.Status != 1 {
-			return nil, fmt.Errorf("Transaction reverted")
-		}
-		return reciept, nil
+		// if receipt.Status != types.ReceiptStatusSuccessful {
+		// 	return receipt, errors.New("transaction reverted")
+		// }
+		return receipt, nil
 	}
 }
 
