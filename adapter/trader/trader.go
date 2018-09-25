@@ -89,15 +89,16 @@ func (t *trader) SendTx(f func() (client.Client, *types.Transaction, error)) (*t
 }
 
 func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*types.Transaction, error) {
-	client, tx, err := f()
 	opts := t.transactOpts
+	opts.GasLimit = 3000000
+	client, tx, err := f()
 
 	nonce, nonceErr := client.Client().PendingNonceAt(context.Background(), t.address)
 	if nonceErr != nil {
 		return tx, nonceErr
 	}
+
 	opts.Nonce = big.NewInt(int64(nonce))
-	opts.GasLimit = 3000000
 
 	if err == nil {
 		opts.Nonce.Add(opts.Nonce, big.NewInt(1))
