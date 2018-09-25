@@ -139,7 +139,7 @@ func (b *client) Transfer(to common.Address, from *bind.TransactOpts, value *big
 		Signer:   from.Signer,
 		Value:    value,
 		GasPrice: from.GasPrice,
-		GasLimit: 3000000,
+		GasLimit: 30000,
 		Context:  from.Context,
 	}
 
