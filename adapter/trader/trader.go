@@ -102,9 +102,9 @@ func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*t
 	client, tx, err := f()
 	opts := t.transactOpts
 
-	nonce, err := client.Client().PendingNonceAt(context.Background(), t.address)
-	if err != nil {
-		return tx, err
+	nonce, nonceErr := client.Client().PendingNonceAt(context.Background(), t.address)
+	if nonceErr != nil {
+		return tx, nonceErr
 	}
 	opts.Nonce = big.NewInt(int64(nonce))
 	opts.GasLimit = 3000000
@@ -128,8 +128,8 @@ func (t *trader) sendTx(f func() (client.Client, *types.Transaction, error)) (*t
 	// try again for up to 1 minute
 	for try := 0; try < 60 && strings.Contains(err.Error(), "nonce"); try++ {
 		time.Sleep(time.Second)
-		nonce, err = client.Client().PendingNonceAt(context.Background(), opts.From)
-		if err != nil {
+		nonce, nonceErr = client.Client().PendingNonceAt(context.Background(), opts.From)
+		if nonceErr != nil {
 			continue
 		}
 		opts.Nonce = big.NewInt(int64(nonce))
