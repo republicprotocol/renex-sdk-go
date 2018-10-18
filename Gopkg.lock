@@ -26,7 +26,15 @@
   version = "2018.01.18"
 
 [[projects]]
-  digest = "1:3e892a54552313db9f7eda71126179f4da5c9d15778681c662f0ef44471698ee"
+  digest = "1:e47d51dab652d26c3fba6f8cba403f922d02757a82abdc77e90df7948daf296e"
+  name = "github.com/deckarep/golang-set"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "cbaa98ba5575e67703b32b4b19f73c91f3c4159e"
+  version = "v1.7.1"
+
+[[projects]]
+  digest = "1:08af77c41dc6a9ab5dd123ce76356fa4068d57287c060cdc934e1131973dd037"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
@@ -38,6 +46,7 @@
     "common/hexutil",
     "common/math",
     "common/mclock",
+    "common/prque",
     "consensus",
     "consensus/misc",
     "core",
@@ -49,7 +58,6 @@
     "crypto/bn256",
     "crypto/bn256/cloudflare",
     "crypto/bn256/google",
-    "crypto/randentropy",
     "crypto/secp256k1",
     "crypto/sha3",
     "ethclient",
@@ -64,8 +72,8 @@
     "trie",
   ]
   pruneopts = "T"
-  revision = "37685930d953bcbe023f9bc65b135a8d8b8f1488"
-  version = "v1.8.12"
+  revision = "8bbe72075e4e16442c4e28d999edee12e294329e"
+  version = "v1.8.17"
 
 [[projects]]
   branch = "master"
@@ -210,19 +218,19 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:d2c68ec64244b5a2ee077d88b5f654f378e5160ab2d852f02f80a265bbb0bd7a"
+  branch = "config"
+  digest = "1:b6d77b5f664e6d5d8305dcec2a23e73bad910a833355eea3551e47bf7c2faa7b"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "510e28c63ffe78a3cd2386971c447d4d776a49b2"
+  revision = "ab27fa2a5b23dd31606b09cfdb6a2a25bcb71bbf"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:dfd2a91069669102c77baeee9aa6d992212561c9f77944c5daf11a0bebeb5773"
+  branch = "version-update"
+  digest = "1:1e7ef8423b4efc22b76f3086ccca57776b09d039fbba9a50079cb72aa0e1c35f"
   name = "github.com/republicprotocol/republic-go"
   packages = [
     "contract",
@@ -240,7 +248,7 @@
     "swarm",
   ]
   pruneopts = "T"
-  revision = "24c2c03e4a81fbcaab9c9edbee0145e3fc53c15b"
+  revision = "46c81fb04fb754745b2903004896edd4e60f0fc0"
 
 [[projects]]
   digest = "1:9787d2d3220cbfd444596afd03ab0abcf391df169b789fbe3eae27fa2e426cf6"
@@ -330,34 +338,6 @@
   packages = ["rate"]
   pruneopts = "T"
   revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
-
-[[projects]]
-  branch = "master"
-  digest = "1:9fa41c0e514dc9403a9660c95f781ac5fb8f825758bb9317a0679790306baeb3"
-  name = "golang.org/x/tools"
-  packages = [
-    "go/ast/astutil",
-    "imports",
-    "internal/fastwalk",
-  ]
-  pruneopts = "T"
-  revision = "1f2a8f46bd66722a69f1649231de9bf0635eb085"
-
-[[projects]]
-  digest = "1:3ccd10c863188cfe0d936fcfe6a055c95362e43af8e7039e33baade846928e74"
-  name = "gopkg.in/fatih/set.v0"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "57907de300222151a123d29255ed17f5ed43fad3"
-  version = "v0.1.0"
-
-[[projects]]
-  branch = "v2"
-  digest = "1:dae137be246befa42ce4b48c0feff2c5796b8a5027139a283f31a21173744410"
-  name = "gopkg.in/karalabe/cookiejar.v2"
-  packages = ["collections/prque"]
-  pruneopts = "T"
-  revision = "8dcd6a7f4951f6ff3ee9cbb919a06d8925822e57"
 
 [[projects]]
   branch = "v2"
