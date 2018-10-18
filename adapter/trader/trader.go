@@ -70,6 +70,16 @@ func NewTrader(path string, passphrase string) (Trader, error) {
 	}, nil
 }
 
+func NewTraderFromKeystore(keystore crypto.Keystore) (Trader, error) {
+	transactOpts := bind.NewKeyedTransactor(keystore.EcdsaKey.PrivateKey)
+	return &trader{
+		transactOpts: transactOpts,
+		address:      transactOpts.From,
+		PrivateKey:   keystore.EcdsaKey.PrivateKey,
+		RWMutex:      new(sync.RWMutex),
+	}, nil
+}
+
 func (t *trader) TransactOpts() *bind.TransactOpts {
 	return bind.NewKeyedTransactor(t.PrivateKey)
 }
