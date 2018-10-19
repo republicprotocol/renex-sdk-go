@@ -70,14 +70,14 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 	}, nil
 }
 
-func NewRenExFromKeystore(network string, keystore crypto.Keystore) (RenEx, error) {
+func NewRenExFromNetwork(network string, clientNetwork client.Network, keystore crypto.Keystore) (RenEx, error) {
 	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 	newTrader, err := trader.NewTraderFromKeystore(keystore)
 	if err != nil {
 		return RenEx{}, err
 	}
 
-	newClient, err := client.NewClient(network)
+	newClient, err := client.NewClientFromNetwork(clientNetwork)
 	if err != nil {
 		return RenEx{}, err
 	}
