@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e599801f29de116faca9d3c1937c0f03c7629de72dab7365684179068d2cd315"
+  digest = "1:0bd9f11575e82b723837f50e170d010ec29a50aa8ca02a962c439146f03aea55"
   name = "github.com/btcsuite/btcd"
   packages = [
     "btcec",
@@ -21,7 +21,7 @@
     "wire",
   ]
   pruneopts = "T"
-  revision = "2a560b2036bee5e3679ec2133eb6520b2f195213"
+  revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
 
 [[projects]]
   branch = "master"
@@ -103,11 +103,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:52a2e41a73c0d6ae06e20cf24bdf71b49d8801c7607f5a264964aa606639e8e9"
+  digest = "1:7b23f65979872a2536a835c3955dc792c545b2bc9bb1374ae216f06f6e4ebd43"
   name = "github.com/getsentry/raven-go"
   packages = ["."]
   pruneopts = "T"
-  revision = "084a9de9eb0361fbd5ded14b55c84e5493a5d7f6"
+  revision = "d1aab6ee63f4a2cca2169c538eceba058cb976b7"
 
 [[projects]]
   digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
@@ -211,35 +211,35 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:17e048d1af8833670439d1ad0c92305fc1ad503e5d03f37ee667c0074df0fd03"
+  digest = "1:445210ef1e723060b3ebeb691648b5090f154992ee35f7065b70a6a5a96a3bb8"
   name = "github.com/minio/sha256-simd"
   packages = ["."]
   pruneopts = "T"
-  revision = "ad98a36ba0da87206e3378c556abbfeaeaa98668"
+  revision = "51976451ce1942acbb55707a983ed232fa027110"
 
 [[projects]]
-  branch = "master"
-  digest = "1:f8a9ee1594aa4a39d11a82f0524f94189c4c5c7e0e0d4614d80afa4358f36f7e"
+  digest = "1:07c8d9601e95a4f8c2ff7c697db1974bf74abde8a0a0f09f736f53d9bc88095c"
   name = "github.com/mr-tron/base58"
   packages = ["base58"]
   pruneopts = "T"
-  revision = "9ad991d48a423a0e52c77eac173b1b589665492a"
+  revision = "89529c6904fcd077434931b4eac8b4b2f0991baf"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:ff45d037856ca869ec9975a5db43b955685d657f2a2de24c236048136c068a7b"
+  digest = "1:d8fb99f78aa19805f60a9053955e109d04ca8d2d09ad5f446bc73278134e4c59"
   name = "github.com/multiformats/go-multiaddr"
   packages = ["."]
   pruneopts = "T"
-  revision = "fe1c46f8be5af4aff4db286e08839295bd922efb"
+  revision = "393301199b4437234bd500b78bdf9555f6428c18"
 
 [[projects]]
   branch = "master"
-  digest = "1:37c156d97592a3ce045bb76b76aae82b72c7ba493dbcced1424c4ff55ac3343f"
+  digest = "1:4f954dbe8c79513340117e933b511f85ab673ee4c5fa881652d2a2c1f3add716"
   name = "github.com/multiformats/go-multihash"
   packages = ["."]
   pruneopts = "T"
-  revision = "66cd79b386e51ddf63270f2b71c57436a60035f3"
+  revision = "97cdb562a04c6ef66d8ed40cd62f8fbcddd396d6"
 
 [[projects]]
   digest = "1:99ec7b4370b05816679fe9ae77f1f8af4eae3df0abaeef8c3d2d42d86f55f549"
@@ -286,18 +286,41 @@
 
 [[projects]]
   branch = "config"
-  digest = "1:b6d77b5f664e6d5d8305dcec2a23e73bad910a833355eea3551e47bf7c2faa7b"
+  digest = "1:dc4086cba8c499349b5ad765b396d67f661f211d2ba5980a57ca86362ce4b17b"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "ab27fa2a5b23dd31606b09cfdb6a2a25bcb71bbf"
+  revision = "277c2e18213416c22fe6a26b33aa920624b94ab6"
+
+[[projects]]
+  branch = "develop"
+  digest = "1:7aa7923ee22f50b17748fbb61efa11d47e774fab6e0169b0af07fbb8aaeb5986"
+  name = "github.com/republicprotocol/renex-swapper-go"
+  packages = [
+    "adapter/blockchain/clients/btc",
+    "adapter/blockchain/clients/eth",
+    "adapter/config",
+    "adapter/http",
+    "adapter/keystore",
+    "domain/match",
+    "domain/order",
+    "domain/swap",
+    "domain/token",
+    "service/logger",
+    "service/renex",
+    "service/state",
+    "service/swap",
+    "utils",
+  ]
+  pruneopts = "T"
+  revision = "4599b48ba138ce5e14e20a91f9b6b03ed0e96414"
 
 [[projects]]
   branch = "version-update"
-  digest = "1:1e7ef8423b4efc22b76f3086ccca57776b09d039fbba9a50079cb72aa0e1c35f"
+  digest = "1:614f16f5d869918eb2dc8745be8e78ee7f80add09b85c7937fff3adca8c59a53"
   name = "github.com/republicprotocol/republic-go"
   packages = [
     "contract",
@@ -315,7 +338,7 @@
     "swarm",
   ]
   pruneopts = "T"
-  revision = "46c81fb04fb754745b2903004896edd4e60f0fc0"
+  revision = "f0d6596ae47513e7d90b4f0622e50fd831b2a31c"
 
 [[projects]]
   digest = "1:9787d2d3220cbfd444596afd03ab0abcf391df169b789fbe3eae27fa2e426cf6"
@@ -326,12 +349,12 @@
   version = "v0.9.2"
 
 [[projects]]
-  digest = "1:6cae6970d70fc5fe75bf83c48ee33e9c4c561a62d0b033254bee8dd5942b815a"
+  digest = "1:a8a03bca5a81878daa4958136f3372af00437c61129ca088a430b0b786b9378a"
   name = "github.com/rs/cors"
   packages = ["."]
   pruneopts = "T"
-  revision = "3fb1b69b103a84de38a19c3c6ec073dd6caa4d3f"
-  version = "v1.5.0"
+  revision = "9a47f48565a795472d43519dd49aac781f3034fb"
+  version = "v1.6.0"
 
 [[projects]]
   digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
@@ -343,7 +366,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ee395d0d8c1719b5a1407f34af93953b4763bacb19a8961aba5b6d312824da41"
+  digest = "1:ea4a45f31f55c7a42ba3063baa646ac94eb7ee9afe60c1fd2c8b396930222620"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -360,11 +383,11 @@
     "leveldb/util",
   ]
   pruneopts = "T"
-  revision = "ae2bd5eed72d46b28834ec3f60db3a3ebedd8dbd"
+  revision = "6b91fda63f2e36186f1c9d0e48578defb69c5d43"
 
 [[projects]]
   branch = "master"
-  digest = "1:45678a8bf1c216b5c5309139c6a1cdde86291093f21cad721687c6e89a10780b"
+  digest = "1:56a43b9f51e5c5ea734e866b82d57c842b022c795a0611ff5f57f3d7c47de45d"
   name = "golang.org/x/crypto"
   packages = [
     "blake2s",
@@ -374,29 +397,29 @@
     "sha3",
   ]
   pruneopts = "T"
-  revision = "e3636079e1a4c1f337f212cc5cd2aca108f6c900"
+  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
 
 [[projects]]
   branch = "master"
-  digest = "1:b3d18cdeba3ba2a0812fd0cc6a2432da37f36b525606e5b7ba565a46a94d54aa"
+  digest = "1:1244f7fbc53a2b9c4174e7e1e62ed5cad5f2f42c67abeac2400a7a72c6c76643"
   name = "golang.org/x/net"
   packages = [
     "context",
     "websocket",
   ]
   pruneopts = "T"
-  revision = "f5e5bdd778241bfefa8627f7124c39cd6ad8d74f"
+  revision = "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e"
 
 [[projects]]
   branch = "master"
-  digest = "1:5cc4f82ba12b3acad172113c1510bee3913ee6b197540a63c8d03e993d046c55"
+  digest = "1:dbfb3304f301334e6f9e1a98860ae3942c6084a8ced85f996c81431f5ae89826"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "T"
-  revision = "af653ce8b74f808d092db8ca9741fbb63d2a469d"
+  revision = "eda9bb28ed513021f3e6a2a361031adc3d8a6301"
 
 [[projects]]
   branch = "master"
@@ -405,6 +428,15 @@
   packages = ["rate"]
   pruneopts = "T"
   revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
+
+[[projects]]
+  digest = "1:7fc160b460a6fc506b37fcca68332464c3f2cd57b6e3f111f26c5bbfd2d5518e"
+  name = "gopkg.in/fsnotify.v1"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  version = "v1.4.7"
 
 [[projects]]
   branch = "v2"

@@ -15,6 +15,7 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
+	"github.com/republicprotocol/republic-go/contract"
 )
 
 type RenEx struct {
@@ -32,7 +33,11 @@ func NewRenEx(network, keystorePath, passphrase string) (RenEx, error) {
 	if err != nil {
 		return RenEx{}, err
 	}
-	return newRenEx(network, newTrader, newClient)
+	conn, err := contract.Connect(contract.Config{Network: contract.Network(network)})
+	if err != nil {
+		return RenEx{}, err
+	}
+	return newRenEx(network, newTrader, newClient, conn)
 }
 
 func NewRenExWithPrivKey(network string, privKey *ecdsa.PrivateKey) (RenEx, error) {
@@ -40,19 +45,23 @@ func NewRenExWithPrivKey(network string, privKey *ecdsa.PrivateKey) (RenEx, erro
 	if err != nil {
 		return RenEx{}, err
 	}
-	return newRenEx(network, trader.NewTraderFromPrivateKey(privKey), newClient)
+	conn, err := contract.Connect(contract.Config{Network: contract.Network(network)})
+	if err != nil {
+		return RenEx{}, err
+	}
+	return newRenEx(network, trader.NewTraderFromPrivateKey(privKey), newClient, conn)
 }
 
-func NewRenExWithNetwork(network string, clientNetwork client.Network, privKey *ecdsa.PrivateKey) (RenEx, error) {
+func NewRenExWithNetwork(network string, clientNetwork client.Network, privKey *ecdsa.PrivateKey, conn contract.Conn) (RenEx, error) {
 	newTrader := trader.NewTraderFromPrivateKey(privKey)
 	newClient, err := client.NewClientFromNetwork(clientNetwork)
 	if err != nil {
 		return RenEx{}, err
 	}
-	return newRenEx(network, newTrader, newClient)
+	return newRenEx(network, newTrader, newClient, conn)
 }
 
-func newRenEx(network string, t trader.Trader, c client.Client) (RenEx, error) {
+func newRenEx(network string, t trader.Trader, c client.Client, conn contract.Conn) (RenEx, error) {
 	ingressAddress := fmt.Sprintf("https://renex-ingress-%s.herokuapp.com", network)
 
 	randomDBID := make([]byte, 32)
@@ -77,7 +86,7 @@ func newRenEx(network string, t trader.Trader, c client.Client) (RenEx, error) {
 
 	fService := funds.NewService(fAdapter)
 
-	oAdapter, err := obAdapter.NewAdapter(ingressAddress, c, t, fService, newStore, network)
+	oAdapter, err := obAdapter.NewAdapterFromConn(ingressAddress, c, t, fService, newStore, network, conn)
 	if err != nil {
 		return RenEx{}, err
 	}
