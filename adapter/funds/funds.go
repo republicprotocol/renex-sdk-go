@@ -229,6 +229,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		tx, err := adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
 		return adapter.client, tx, err
 	})
+	if tx2 == nil {
+		return fmt.Errorf("Nil Deposit Transaction")
+	}
 	if err != nil {
 		return err
 	}
@@ -309,6 +312,9 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 		tx, err := erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
 		return adapter.client, tx, err
 	})
+	if tx == nil {
+		return fmt.Errorf("Nil Transfer Transaction")
+	}
 	if err != nil {
 		return err
 	}
