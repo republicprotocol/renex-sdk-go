@@ -10,10 +10,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/republicprotocol/republic-go/shamir"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
@@ -23,6 +20,7 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
 	"github.com/republicprotocol/republic-go/contract"
 	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republic-go/shamir"
 )
 
 type adapter struct {
