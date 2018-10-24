@@ -4,12 +4,12 @@
 
 # TODO: Update branch once merged
 [[constraint]]
-  branch = "version-update"
+  branch = "lotand"
   name = "github.com/republicprotocol/republic-go"
 
 # TODO: Update branch once merged
 [[constraint]]
-  branch = "config"
+  branch = "lotand"
   name = "github.com/republicprotocol/renex-ingress-go"
 
 # Temporary fix https://github.com/golang/dep/issues/1799
