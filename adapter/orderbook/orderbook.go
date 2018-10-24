@@ -6,13 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/republicprotocol/republic-go/shamir"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-
 	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
@@ -22,6 +20,7 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
 	"github.com/republicprotocol/republic-go/contract"
 	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republic-go/shamir"
 )
 
 type adapter struct {
@@ -39,7 +38,14 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 	if err != nil {
 		return nil, err
 	}
+	return newAdapter(httpAddress, client, trader, funds, store, network, conn)
+}
 
+func NewAdapterFromConn(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string, conn contract.Conn) (orderbook.Adapter, error) {
+	return newAdapter(httpAddress, client, trader, funds, store, network, conn)
+}
+
+func newAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string, conn contract.Conn) (orderbook.Adapter, error) {
 	republicBinder, err := contract.NewBinder(trader.TransactOpts(), conn)
 
 	renexSettlement, err := bindings.NewRenExSettlement(client.RenExSettlementAddress(), bind.ContractBackend(client.Client()))
@@ -66,7 +72,6 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	if err != nil {
 		return err
 	}
-
 
 	req := httpadapter.OpenOrderRequest{
 		Address:               adapter.trader.Address().String()[2:],
@@ -198,13 +203,13 @@ func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFra
 
 		// Get commitments of all the fragments
 		commitments := map[uint64]order.FragmentCommitment{}
-		for i, ordFragment := range ordFragments{
+		for i, ordFragment := range ordFragments {
 			commitment := order.FragmentCommitment{
-				PriceCo: shamir.NewCommitment(ordFragment.Price.Co, ordFragment.Blinding),
-				PriceExp: shamir.NewCommitment(ordFragment.Price.Exp, ordFragment.Blinding),
-				VolumeCo: shamir.NewCommitment(ordFragment.Volume.Co, ordFragment.Blinding),
-				VolumeExp: shamir.NewCommitment(ordFragment.Volume.Exp, ordFragment.Blinding),
-				MinimumVolumeCo: shamir.NewCommitment(ordFragment.MinimumVolume.Co, ordFragment.Blinding),
+				PriceCo:          shamir.NewCommitment(ordFragment.Price.Co, ordFragment.Blinding),
+				PriceExp:         shamir.NewCommitment(ordFragment.Price.Exp, ordFragment.Blinding),
+				VolumeCo:         shamir.NewCommitment(ordFragment.Volume.Co, ordFragment.Blinding),
+				VolumeExp:        shamir.NewCommitment(ordFragment.Volume.Exp, ordFragment.Blinding),
+				MinimumVolumeCo:  shamir.NewCommitment(ordFragment.MinimumVolume.Co, ordFragment.Blinding),
 				MinimumVolumeExp: shamir.NewCommitment(ordFragment.MinimumVolume.Co, ordFragment.Blinding),
 			}
 			commitments[uint64(i+1)] = commitment

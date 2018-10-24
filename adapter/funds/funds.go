@@ -235,6 +235,9 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 	if err != nil {
 		return err
 	}
+	if tx2 == nil {
+		return fmt.Errorf("Nil Deposit Transaction")
+	}
 
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx2); err != nil {
 		return err
@@ -314,6 +317,9 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 	}
 	if err != nil {
 		return err
+	}
+	if tx == nil {
+		return fmt.Errorf("Nil Transfer Transaction")
 	}
 
 	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {

@@ -52,8 +52,8 @@ func GetNetwork(network string) (Network, error) {
 	switch network {
 	case "mainnet":
 		return Network{
-			URL:   "https://mainnet.infura.io",
-			Chain: "mainnet",
+			URL:                     "https://mainnet.infura.io",
+			Chain:                   "mainnet",
 			DarknodeRegistryAddress: "0x3799006a87fde3ccfc7666b3e6553b03ed341c2f",
 			OrderbookAddress:        "0x6b8bb175c092de7d81860b18db360b734a2598e0",
 			RenExBalancesAddress:    "0x9636f9ac371ca0965b7c2b4ad13c4cc64d0ff2dc",
@@ -62,36 +62,16 @@ func GetNetwork(network string) (Network, error) {
 		}, nil
 	case "testnet":
 		return Network{
-			URL:   "https://kovan.infura.io",
-			Chain: "kovan",
+			URL:                     "https://kovan.infura.io",
+			Chain:                   "kovan",
 			DarknodeRegistryAddress: "0xf7daA0Baf257547A6Ad3CE7FFF71D55cb7426F76",
 			OrderbookAddress:        "0xA53Da4093c682a4259DE38302341BFEf7e9f7a4f",
 			RenExBalancesAddress:    "0x97073d0d654ebb71dd9efd1dfa777c73f56d4021",
 			RenExSettlementAddress:  "0x68FE2088A321A42DE11Aba93D32C81C9f20b1Abe",
 			RenExTokensAddress:      "0xedFF6E7C072fA0018720734F6d5a4f4DC30f9869",
 		}, nil
-	case "falcon":
-		return Network{
-			URL:   "https://kovan.infura.io",
-			Chain: "kovan",
-			DarknodeRegistryAddress: "0xDaA8C30AF85070506F641E456aFDB84d4bA972Bd",
-			OrderbookAddress:        "0x592d16f8C5FA8f1E074ab3C2cd1ACD087ADcdc0B",
-			RenExBalancesAddress:    "0xb3E632943fA995FC75692e46b62383BE49cDdbc4",
-			RenExSettlementAddress:  "0xBE936cb23DD9a84E4D9358810f7F275e93CCD770",
-			RenExTokensAddress:      "0x9a898c8148131eF189B1c8575692376403780325",
-		}, nil
-	case "nightly":
-		return Network{
-			URL:   "https://kovan.infura.io",
-			Chain: "kovan",
-			DarknodeRegistryAddress: "0x8a31d477267A5af1bc5142904ef0AfA31D326E03",
-			OrderbookAddress:        "0x376127aDc18260fc238eBFB6626b2F4B59eC9b66",
-			RenExBalancesAddress:    "0xa95dE870dDFB6188519D5CC63CEd5E0FBac1aa8E",
-			RenExSettlementAddress:  "0x5f25233ca99104D31612D4fB937B090d5A2EbB75",
-			RenExTokensAddress:      "0x160ECA47935be4139eC5B94D99B678d6f7e18f95",
-		}, nil
 	default:
-		return Network{}, fmt.Errorf("Unknown Network")
+		return Network{}, fmt.Errorf("unknown network %s", network)
 	}
 }
 
@@ -102,6 +82,23 @@ func NewClient(net string) (Client, error) {
 		return nil, err
 	}
 
+	ethclient, err := ethclient.Dial(network.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &client{
+		client:           ethclient,
+		network:          network.Chain,
+		orderbook:        common.HexToAddress(network.OrderbookAddress),
+		darknodeRegistry: common.HexToAddress(network.DarknodeRegistryAddress),
+		renExBalances:    common.HexToAddress(network.RenExBalancesAddress),
+		renExTokens:      common.HexToAddress(network.RenExTokensAddress),
+		renExSettlement:  common.HexToAddress(network.RenExSettlementAddress),
+	}, nil
+}
+
+func NewClientFromNetwork(network Network) (Client, error) {
 	ethclient, err := ethclient.Dial(network.URL)
 	if err != nil {
 		return nil, err
