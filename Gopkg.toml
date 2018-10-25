@@ -2,14 +2,12 @@
   name = "github.com/ethereum/go-ethereum"
   version = "1.8.17"
 
-# TODO: Update branch once merged
 [[constraint]]
-  branch = "lotand"
+  branch = "nightly"
   name = "github.com/republicprotocol/republic-go"
 
-# TODO: Update branch once merged
 [[constraint]]
-  branch = "lotand"
+  branch = "nightly"
   name = "github.com/republicprotocol/renex-ingress-go"
 
 # Temporary fix https://github.com/golang/dep/issues/1799
