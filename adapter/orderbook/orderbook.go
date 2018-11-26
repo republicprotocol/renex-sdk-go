@@ -11,7 +11,6 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
@@ -22,6 +21,29 @@ import (
 	"github.com/republicprotocol/republic-go/order"
 	"github.com/republicprotocol/republic-go/shamir"
 )
+
+type OrderFragment struct {
+	OrderID         string           `json:"orderId"`
+	OrderType       order.Type       `json:"orderType"`
+	OrderParity     order.Parity     `json:"orderParity"`
+	OrderSettlement order.Settlement `json:"orderSettlement"`
+	OrderExpiry     int64            `json:"orderExpiry"`
+	Index           int64            `json:"index"`
+	ID              string           `json:"id"`
+	EpochDepth      int32            `json:"epochDepth"`
+	Tokens          string           `json:"tokens"`
+	Price           []string         `json:"price"`
+	Volume          []string         `json:"volume"`
+	MinimumVolume   []string         `json:"minimumVolume"`
+	Nonce           string           `json:"nonce"`
+}
+
+type OrderFragmentMapping map[string][]OrderFragment
+
+type openOrderRequest struct {
+	Address               string                 `json:"address"`
+	OrderFragmentMappings []OrderFragmentMapping `json:"orderFragmentMappings"`
+}
 
 type adapter struct {
 	httpAddress             string
@@ -73,9 +95,9 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	req := httpadapter.OpenOrderRequest{
+	req := openOrderRequest{
 		Address:               adapter.trader.Address().String()[2:],
-		OrderFragmentMappings: []httpadapter.OrderFragmentMapping{mapping},
+		OrderFragmentMappings: []OrderFragmentMapping{mapping},
 	}
 
 	data, err := json.MarshalIndent(req, "", "  ")
@@ -187,13 +209,13 @@ func (adapter *adapter) MatchDetails(id order.ID) (orderbook.OrderMatch, error) 
 	return adapter.renexSettlementContract.GetMatchDetails(&bind.CallOpts{}, id)
 }
 
-func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFragmentMapping, error) {
+func (adapter *adapter) buildOrderMapping(ord order.Order) (OrderFragmentMapping, error) {
 	pods, err := adapter.republicBinder.Pods()
 	if err != nil {
 		return nil, err
 	}
 
-	orderFragmentMapping := httpadapter.OrderFragmentMapping{}
+	orderFragmentMapping := OrderFragmentMapping{}
 
 	for _, pod := range pods {
 		n := int64(len(pod.Darknodes))
@@ -203,7 +225,7 @@ func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFra
 		if err != nil {
 			return nil, err
 		}
-		orderFragmentMapping[hash] = []httpadapter.OrderFragment{}
+		orderFragmentMapping[hash] = []OrderFragment{}
 
 		// Get commitments of all the fragments
 		commitments := map[uint64]order.FragmentCommitment{}
@@ -220,7 +242,7 @@ func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFra
 		}
 
 		for i, ordFragment := range ordFragments {
-			marshaledOrdFragment := httpadapter.OrderFragment{
+			marshaledOrdFragment := OrderFragment{
 				Index: int64(i + 1),
 			}
 

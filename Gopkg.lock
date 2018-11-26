@@ -134,22 +134,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
-  name = "github.com/gorilla/context"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
-
-[[projects]]
-  digest = "1:e73f5b0152105f18bc131fba127d9949305c8693f8a762588a82a48f61756f5f"
-  name = "github.com/gorilla/mux"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
-  version = "v1.6.2"
-
-[[projects]]
   branch = "master"
   digest = "1:6e7f344f0759e7bd98e5d373e3149b5fca4132261c241777a1c8e57176f1fe05"
   name = "github.com/gxed/hashland"
@@ -189,17 +173,6 @@
   pruneopts = "T"
   revision = "6237cf65f3a6f7111cd8a42be3590df99a66bc7d"
   version = "1.0.0"
-
-[[projects]]
-  digest = "1:2106821001befed6a5783b54950030dd0614257d18bef539e46cae9afd02b89b"
-  name = "github.com/lib/pq"
-  packages = [
-    ".",
-    "oid",
-  ]
-  pruneopts = "T"
-  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
-  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -285,17 +258,6 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:b8f7252bfa1c329d81dc758b628a20ddbbfb625416693c5a9957b2dd34eb2365"
-  name = "github.com/republicprotocol/renex-ingress-go"
-  packages = [
-    "httpadapter",
-    "ingress",
-  ]
-  pruneopts = "T"
-  revision = "cd70ed1be3433b91abfcd56069256417c88a97d2"
-
-[[projects]]
   branch = "develop"
   digest = "1:7aa7923ee22f50b17748fbb61efa11d47e774fab6e0169b0af07fbb8aaeb5986"
   name = "github.com/republicprotocol/renex-swapper-go"
@@ -328,14 +290,11 @@
     "crypto",
     "dispatch",
     "identity",
-    "logger",
     "order",
-    "orderbook",
     "registry",
     "shamir",
     "stackint",
     "stackint/asm",
-    "swarm",
   ]
   pruneopts = "T"
   revision = "55eee13beb5afa53b765f5ea67eaad0cf7047f38"
@@ -355,14 +314,6 @@
   pruneopts = "T"
   revision = "9a47f48565a795472d43519dd49aac781f3034fb"
   version = "v1.6.0"
-
-[[projects]]
-  digest = "1:274f67cb6fed9588ea2521ecdac05a6d62a8c51c074c1fccc6a49a40ba80e925"
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
 
 [[projects]]
   digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
@@ -411,10 +362,7 @@
   branch = "master"
   digest = "1:0c04b2a25e05e53a014eb3329cd9e3759bee811e333cf6db2ec1819d6c2dad31"
   name = "golang.org/x/net"
-  packages = [
-    "context",
-    "websocket",
-  ]
+  packages = ["websocket"]
   pruneopts = "T"
   revision = "9b4f9f5ad5197c79fd623a3638e70d8b26cef344"
 
@@ -428,14 +376,6 @@
   ]
   pruneopts = "T"
   revision = "5cd93ef61a7c8f0f858690154eb6de2e69415fa1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:59a73243379bd5412feb268ec3d9ec0c55acb596ce15fdf937ec29ea6dab441f"
-  name = "golang.org/x/time"
-  packages = ["rate"]
-  pruneopts = "T"
-  revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
 
 [[projects]]
   digest = "1:7fc160b460a6fc506b37fcca68332464c3f2cd57b6e3f111f26c5bbfd2d5518e"
@@ -476,7 +416,6 @@
     "github.com/ethereum/go-ethereum/crypto",
     "github.com/ethereum/go-ethereum/ethclient",
     "github.com/ethereum/go-ethereum/event",
-    "github.com/republicprotocol/renex-ingress-go/httpadapter",
     "github.com/republicprotocol/renex-swapper-go/adapter/http",
     "github.com/republicprotocol/renex-swapper-go/domain/swap",
     "github.com/republicprotocol/republic-go/contract",

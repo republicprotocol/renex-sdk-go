@@ -16,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/republicprotocol/renex-ingress-go/httpadapter"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
@@ -32,6 +31,11 @@ type adapter struct {
 	trader                trader.Trader
 	httpAddress           string
 	store.Store
+}
+
+type approveWithdrawalRequest struct {
+	Trader  string `json:"address"`
+	TokenID uint32 `json:"tokenID"`
 }
 
 func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, store store.Store) (funds.Adapter, error) {
@@ -133,7 +137,7 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 }
 
 func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error) {
-	req := httpadapter.ApproveWithdrawalRequest{
+	req := approveWithdrawalRequest{
 		Trader:  adapter.trader.Address().String()[2:],
 		TokenID: uint32(tokenCode),
 	}
