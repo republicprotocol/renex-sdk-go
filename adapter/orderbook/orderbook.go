@@ -183,6 +183,10 @@ func (adapter *adapter) Settled(id order.ID) (bool, error) {
 	return det.Settled, nil
 }
 
+func (adapter *adapter) MatchDetails(id order.ID) (orderbook.OrderMatch, error) {
+	return adapter.renexSettlementContract.GetMatchDetails(&bind.CallOpts{}, id)
+}
+
 func (adapter *adapter) buildOrderMapping(ord order.Order) (httpadapter.OrderFragmentMapping, error) {
 	pods, err := adapter.republicBinder.Pods()
 	if err != nil {

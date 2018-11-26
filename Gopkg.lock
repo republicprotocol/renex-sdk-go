@@ -285,15 +285,15 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "nightly"
-  digest = "1:9151ae91d42c8b5f5a83947a4a90a2b5f16512086a1d420534f4abd5bd015a5f"
+  branch = "master"
+  digest = "1:b8f7252bfa1c329d81dc758b628a20ddbbfb625416693c5a9957b2dd34eb2365"
   name = "github.com/republicprotocol/renex-ingress-go"
   packages = [
     "httpadapter",
     "ingress",
   ]
   pruneopts = "T"
-  revision = "f25997cdab6b04c19f0b91d7f0e4442d28638342"
+  revision = "cd70ed1be3433b91abfcd56069256417c88a97d2"
 
 [[projects]]
   branch = "develop"
@@ -355,6 +355,14 @@
   pruneopts = "T"
   revision = "9a47f48565a795472d43519dd49aac781f3034fb"
   version = "v1.6.0"
+
+[[projects]]
+  digest = "1:274f67cb6fed9588ea2521ecdac05a6d62a8c51c074c1fccc6a49a40ba80e925"
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
