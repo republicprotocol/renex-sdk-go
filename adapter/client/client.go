@@ -56,19 +56,19 @@ func GetNetwork(network string) (Network, error) {
 			Chain:                   "mainnet",
 			DarknodeRegistryAddress: "0x3799006a87fde3ccfc7666b3e6553b03ed341c2f",
 			OrderbookAddress:        "0x6b8bb175c092de7d81860b18db360b734a2598e0",
-			RenExBalancesAddress:    "0x9636f9ac371ca0965b7c2b4ad13c4cc64d0ff2dc",
-			RenExSettlementAddress:  "0x908262de0366e42d029b0518d5276762c92b21e1",
+			RenExBalancesAddress:    "0x5eC18B477B20aF940807B5478dB5A64Cd4a77EFd",
+			RenExSettlementAddress:  "0x908262dE0366E42d029B0518D5276762c92B21e1",
 			RenExTokensAddress:      "0x7cade4fbc8761817bb62a080733d1b6cad744ec4",
 		}, nil
 	case "testnet":
 		return Network{
 			URL:                     "https://kovan.infura.io",
 			Chain:                   "kovan",
-			DarknodeRegistryAddress: "0xf7daA0Baf257547A6Ad3CE7FFF71D55cb7426F76",
-			OrderbookAddress:        "0xA53Da4093c682a4259DE38302341BFEf7e9f7a4f",
-			RenExBalancesAddress:    "0x97073d0d654ebb71dd9efd1dfa777c73f56d4021",
-			RenExSettlementAddress:  "0x68FE2088A321A42DE11Aba93D32C81C9f20b1Abe",
-			RenExTokensAddress:      "0xedFF6E7C072fA0018720734F6d5a4f4DC30f9869",
+			DarknodeRegistryAddress: "0x75Fa8349fc9C7C640A4e9F1A1496fBB95D2Dc3d5",
+			OrderbookAddress:        "0xA9b453FC64b4766Aab8a867801d0a4eA7b1474E0",
+			RenExBalancesAddress:    "0xb0E21B869D6f741a8A8F5075BA59E496593B881A",
+			RenExSettlementAddress:  "0x65A699E555cf93e4e115FfC2DE2F41d5A21DF3Fb",
+			RenExTokensAddress:      "0x481b39E2000a117CBA417473DC1E7cdAf4EAd98F",
 		}, nil
 	default:
 		return Network{}, fmt.Errorf("unknown network %s", network)
