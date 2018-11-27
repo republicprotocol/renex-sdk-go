@@ -2,6 +2,7 @@ package orderbook
 
 import (
 	"math/big"
+	"strings"
 
 	"github.com/republicprotocol/republic-go/order"
 )
@@ -55,13 +56,14 @@ func (service *service) CancelOrder(orderID order.ID) error {
 }
 
 func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, error) {
+	traderAddress = strings.ToLower(traderAddress)
 	orderIds, _, addresses, err := service.ListOrders()
 	if err != nil {
 		return nil, err
 	}
 	orderList := []order.ID{}
 	for i, id := range orderIds {
-		if traderAddress == addresses[i] {
+		if traderAddress == strings.ToLower(addresses[i]) {
 			orderList = append(orderList, id)
 		}
 	}
