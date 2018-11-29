@@ -2,16 +2,27 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:495c7006c2f48b705f0d89fd8449a2ae70622bb748788d9d17caafa65a6769f9"
-  name = "github.com/aristanetworks/goarista"
-  packages = ["monotime"]
+  digest = "1:777f1f0fc92c6fb838ff214ef3b05160b513c262beb88fa342d7a50e797b9539"
+  name = "github.com/allegro/bigcache"
+  packages = [
+    ".",
+    "queue",
+  ]
   pruneopts = "T"
-  revision = "33151c4543a79b013e8e6799ef45b2ba88c3cd1c"
+  revision = "f31987a23e44c5121ef8c8b2f2ea2e8ffa37b068"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:0bd9f11575e82b723837f50e170d010ec29a50aa8ca02a962c439146f03aea55"
+  digest = "1:c1a6eac1aa52b62daff552d5bd043453a8675b7f9eee0ea924ed7b00a5a56264"
+  name = "github.com/aristanetworks/goarista"
+  packages = ["monotime"]
+  pruneopts = "T"
+  revision = "5faa74ffbed7096292069fdcd0eae96146a3158a"
+
+[[projects]]
+  branch = "master"
+  digest = "1:05e21a7d7c3058ac655d1fadd968cc1268ef8c77782415227df1f3a1118a2868"
   name = "github.com/btcsuite/btcd"
   packages = [
     "btcec",
@@ -21,7 +32,7 @@
     "wire",
   ]
   pruneopts = "T"
-  revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
+  revision = "3dcf298fed2d5fd65918dc560b3942b2aa0629e8"
 
 [[projects]]
   branch = "master"
@@ -44,14 +55,6 @@
   revision = "ab6388e0c60ae4834a1f57511e20c17b5f78be4b"
 
 [[projects]]
-  digest = "1:fed1f537c2f1269fe475a8556c393fe466641682d73ef8fd0491cd3aa1e47bad"
-  name = "github.com/certifi/gocertifi"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "deb3ae2ef2610fde3330947281941c562861188b"
-  version = "2018.01.18"
-
-[[projects]]
   digest = "1:e47d51dab652d26c3fba6f8cba403f922d02757a82abdc77e90df7948daf296e"
   name = "github.com/deckarep/golang-set"
   packages = ["."]
@@ -60,7 +63,7 @@
   version = "v1.7.1"
 
 [[projects]]
-  digest = "1:08af77c41dc6a9ab5dd123ce76356fa4068d57287c060cdc934e1131973dd037"
+  digest = "1:8bf83050739ffd7f13bdc7dd281fccc40718d52eb2ce23fe7d980a3ac1f0a8b0"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
@@ -98,16 +101,8 @@
     "trie",
   ]
   pruneopts = "T"
-  revision = "8bbe72075e4e16442c4e28d999edee12e294329e"
-  version = "v1.8.17"
-
-[[projects]]
-  digest = "1:20e98cc6b7562b472ad307523dd105a0324793a7de09abe9453acefd51821f11"
-  name = "github.com/getsentry/raven-go"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "3033899c76deb3fb6570d9c4074d00443aeab88f"
-  version = "v0.1.0"
+  revision = "dae82f098570e15d44584f0d7f350713f4774727"
+  version = "v1.8.19"
 
 [[projects]]
   digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
@@ -126,12 +121,12 @@
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
-  digest = "1:3a26588bc48b96825977c1b3df964f8fd842cd6860cc26370588d3563433cf11"
+  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "T"
-  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
-  version = "v1.0.0"
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -199,23 +194,23 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:d8fb99f78aa19805f60a9053955e109d04ca8d2d09ad5f446bc73278134e4c59"
+  digest = "1:c1aa85045d21befc6bd35c9a12aa6f25c57f4eefdac3a02d40a9ff9b69ca5661"
   name = "github.com/multiformats/go-multiaddr"
   packages = ["."]
   pruneopts = "T"
-  revision = "393301199b4437234bd500b78bdf9555f6428c18"
+  revision = "2b4e098f3e0aa2c8bc960f0e4bdc3247efc3749c"
+  version = "v1.3.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4f954dbe8c79513340117e933b511f85ab673ee4c5fa881652d2a2c1f3add716"
+  digest = "1:5267c0e75b319dc15937048139397e3f597be970891037bf5e1898910ff1f8d2"
   name = "github.com/multiformats/go-multihash"
   packages = ["."]
   pruneopts = "T"
-  revision = "97cdb562a04c6ef66d8ed40cd62f8fbcddd396d6"
+  revision = "8be2a682ab9f254311de1375145a2f78a809b07d"
+  version = "v1.0.8"
 
 [[projects]]
-  digest = "1:99ec7b4370b05816679fe9ae77f1f8af4eae3df0abaeef8c3d2d42d86f55f549"
+  digest = "1:1de2ef6996903caab4bcf41f7885aa276d8e20076ba52ca80b2c6c32efb9c5f5"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -238,8 +233,8 @@
     "types",
   ]
   pruneopts = "T"
-  revision = "3774a09d95489ccaa16032e0770d08ea77ba6184"
-  version = "v1.6.0"
+  revision = "2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f"
+  version = "v1.7.0"
 
 [[projects]]
   digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
@@ -250,12 +245,12 @@
   version = "v1.2"
 
 [[projects]]
-  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
-  name = "github.com/pkg/errors"
+  branch = "master"
+  digest = "1:2bb44ad552934f1b356396b41030db8e14369a07f326a542512c2a67a423279a"
+  name = "github.com/republicprotocol/beth-go"
   packages = ["."]
   pruneopts = "T"
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "c6cabe0b3e3f9dd71eba66bc90ddb9e535d50324"
 
 [[projects]]
   branch = "develop"
@@ -281,23 +276,22 @@
   revision = "4599b48ba138ce5e14e20a91f9b6b03ed0e96414"
 
 [[projects]]
-  branch = "nightly"
-  digest = "1:1d529724345100992b36828cb6b2b19a7d285e260cb45f13e3f6b4175308dc2d"
-  name = "github.com/republicprotocol/republic-go"
+  branch = "master"
+  digest = "1:b9442333357761b166e151f42de120a141ab50de09c3c2582d72dd95acd75ed7"
+  name = "github.com/republicprotocol/republicprotocol-go"
   packages = [
-    "contract",
-    "contract/bindings",
-    "crypto",
-    "dispatch",
-    "identity",
-    "order",
-    "registry",
-    "shamir",
-    "stackint",
-    "stackint/asm",
+    "adapter/contract",
+    "adapter/contract/bindings",
+    "core/orderbook",
+    "foundation/crypto",
+    "foundation/identity",
+    "foundation/order",
+    "foundation/shamir",
+    "foundation/stackint",
+    "foundation/stackint/asm",
   ]
   pruneopts = "T"
-  revision = "55eee13beb5afa53b765f5ea67eaad0cf7047f38"
+  revision = "64cb608981f38edff57043d33cd8959fcd524ac8"
 
 [[projects]]
   digest = "1:9787d2d3220cbfd444596afd03ab0abcf391df169b789fbe3eae27fa2e426cf6"
@@ -325,7 +319,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ea4a45f31f55c7a42ba3063baa646ac94eb7ee9afe60c1fd2c8b396930222620"
+  digest = "1:7b17050757aaa2f52fcc582125d7abaf5fc2ff273bf023da0c4f98e6f2ebed5f"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -342,11 +336,11 @@
     "leveldb/util",
   ]
   pruneopts = "T"
-  revision = "6b91fda63f2e36186f1c9d0e48578defb69c5d43"
+  revision = "b001fa50d6b27f3f0bb175a87d0cb55426d0a0ae"
 
 [[projects]]
   branch = "master"
-  digest = "1:77f54f6503831d121702e88abc62be16dfdba1ac6c5d73cc62ed0c55e130b097"
+  digest = "1:a0097f60e459fbf5512fcc7aa8bf7df60471624dc7956c68e7eb7f8db3706aa7"
   name = "golang.org/x/crypto"
   packages = [
     "blake2s",
@@ -356,26 +350,26 @@
     "sha3",
   ]
   pruneopts = "T"
-  revision = "74cb1d3d52f4c01cbfb44c1b50d204462f3124c7"
+  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
 
 [[projects]]
   branch = "master"
-  digest = "1:0c04b2a25e05e53a014eb3329cd9e3759bee811e333cf6db2ec1819d6c2dad31"
+  digest = "1:a92d7dd2268883d2d466576cb7319cc5321c906d853da4b4ac1ffc407895f809"
   name = "golang.org/x/net"
   packages = ["websocket"]
   pruneopts = "T"
-  revision = "9b4f9f5ad5197c79fd623a3638e70d8b26cef344"
+  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
-  digest = "1:d6d9bf31934efd450aeb0a07061dce8a0e84bc80e4aae05841dd588325832a40"
+  digest = "1:a41815681b9cb9d91eb5bd22009d99af713567bb20f14b2ff13765d8fd8de808"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "T"
-  revision = "5cd93ef61a7c8f0f858690154eb6de2e69415fa1"
+  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
 
 [[projects]]
   digest = "1:7fc160b460a6fc506b37fcca68332464c3f2cd57b6e3f111f26c5bbfd2d5518e"
@@ -409,19 +403,17 @@
     "github.com/ethereum/go-ethereum",
     "github.com/ethereum/go-ethereum/accounts/abi",
     "github.com/ethereum/go-ethereum/accounts/abi/bind",
-    "github.com/ethereum/go-ethereum/accounts/keystore",
     "github.com/ethereum/go-ethereum/common",
-    "github.com/ethereum/go-ethereum/core",
     "github.com/ethereum/go-ethereum/core/types",
     "github.com/ethereum/go-ethereum/crypto",
     "github.com/ethereum/go-ethereum/ethclient",
     "github.com/ethereum/go-ethereum/event",
+    "github.com/republicprotocol/beth-go",
     "github.com/republicprotocol/renex-swapper-go/adapter/http",
     "github.com/republicprotocol/renex-swapper-go/domain/swap",
-    "github.com/republicprotocol/republic-go/contract",
-    "github.com/republicprotocol/republic-go/crypto",
-    "github.com/republicprotocol/republic-go/order",
-    "github.com/republicprotocol/republic-go/shamir",
+    "github.com/republicprotocol/republicprotocol-go/adapter/contract",
+    "github.com/republicprotocol/republicprotocol-go/foundation/order",
+    "github.com/republicprotocol/republicprotocol-go/foundation/shamir",
     "github.com/syndtr/goleveldb/leveldb",
   ]
   solver-name = "gps-cdcl"

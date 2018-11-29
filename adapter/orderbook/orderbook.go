@@ -2,6 +2,7 @@ package orderbook
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -11,15 +12,14 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/republicprotocol/beth-go"
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
-	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
 	"github.com/republicprotocol/renex-sdk-go/core/orderbook"
-	"github.com/republicprotocol/republic-go/contract"
-	"github.com/republicprotocol/republic-go/order"
-	"github.com/republicprotocol/republic-go/shamir"
+	"github.com/republicprotocol/republicprotocol-go/adapter/contract"
+	"github.com/republicprotocol/republicprotocol-go/foundation/order"
 )
 
 type OrderFragment struct {
@@ -46,46 +46,41 @@ type openOrderRequest struct {
 }
 
 type adapter struct {
-	httpAddress             string
-	republicBinder          contract.Binder
+	httpAddress     string
+	orderbookBinder contract.OrderbookBinder
+	// dnrBinder               contract.DarknodeRegistryBinder
 	renexSettlementContract *bindings.RenExSettlement
-	trader                  trader.Trader
+	account                 beth.Account
 	client                  client.Client
 	funds                   funds.Funds
 	store                   store.Store
 }
 
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string) (orderbook.Adapter, error) {
-	conn, err := contract.Connect(contract.Config{Network: contract.Network(network)})
-	if err != nil {
-		return nil, err
-	}
-	return newAdapter(httpAddress, client, trader, funds, store, network, conn)
+func NewAdapter(httpAddress string, client client.Client, account beth.Account, funds funds.Funds, store store.Store, network string) (orderbook.Adapter, error) {
+	return newAdapter(httpAddress, client, account, funds, store, network)
 }
 
-func NewAdapterFromConn(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string, conn contract.Conn) (orderbook.Adapter, error) {
-	return newAdapter(httpAddress, client, trader, funds, store, network, conn)
-}
-
-func newAdapter(httpAddress string, client client.Client, trader trader.Trader, funds funds.Funds, store store.Store, network string, conn contract.Conn) (orderbook.Adapter, error) {
-	republicBinder, err := contract.NewBinder(trader.TransactOpts(), conn)
+func newAdapter(httpAddress string, client client.Client, account beth.Account, funds funds.Funds, store store.Store, network string) (orderbook.Adapter, error) {
+	orderbookBinder, err := contract.NewOrderbookBinder(1, account, network, account.Address())
+	// dnrBinder, err := contract.NewDarknodeRegistryBinder()
 
 	renexSettlement, err := bindings.NewRenExSettlement(client.RenExSettlementAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
 	}
 	return &adapter{
-		republicBinder:          republicBinder,
+		orderbookBinder: orderbookBinder,
+		// dnrBinder:               dnrBinder,
 		renexSettlementContract: renexSettlement,
 		httpAddress:             httpAddress,
-		trader:                  trader,
+		account:                 account,
 		client:                  client,
 		funds:                   funds,
 		store:                   store,
 	}, nil
 }
 
-func (adapter *adapter) RequestOpenOrder(order order.Order) error {
+func (adapter *adapter) RequestOpenOrder(ctx context.Context, order order.Order) error {
 	if err := adapter.BalanceCheck(order); err != nil {
 		return err
 	}
@@ -96,7 +91,7 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 	}
 
 	req := openOrderRequest{
-		Address:               adapter.trader.Address().String()[2:],
+		Address:               adapter.account.Address().String()[2:],
 		OrderFragmentMappings: []OrderFragmentMapping{mapping},
 	}
 
@@ -140,22 +135,22 @@ func (adapter *adapter) RequestOpenOrder(order order.Order) error {
 		return err
 	}
 
-	if err := adapter.republicBinder.OpenOrder(1, sig, order.ID); err != nil {
+	if err := adapter.orderbookBinder.OpenOrder(ctx, order.Parity, order.ID, order.Type, order.Settlement, uint64(order.Expiry.Unix()), sig[:]); err != nil {
 		return err
 	}
 
 	return adapter.store.AppendOrder(order)
 }
 
-func (adapter *adapter) RequestCancelOrder(orderID order.ID) error {
-	if err := adapter.republicBinder.CancelOrder(orderID); err != nil {
+func (adapter *adapter) RequestCancelOrder(ctx context.Context, orderID order.ID) error {
+	if err := adapter.orderbookBinder.CancelOrder(ctx, orderID); err != nil {
 		return err
 	}
 	return adapter.store.DeleteOrder(orderID)
 }
 
 func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, error) {
-	numOrders, err := adapter.republicBinder.OrderCounts()
+	/* numOrders, err := adapter.orderbookBinder.OrderCounts()
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -167,14 +162,14 @@ func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, erro
 	start := 0
 	limit := 500
 	if orderCount < limit {
-		return adapter.republicBinder.Orders(0, orderCount)
+		return adapter.orderbookBinder.Orders(0, orderCount)
 	}
 
 	for {
 		if orderCount-start < 0 {
 			return orderIDs, statuses, addresses, nil
 		}
-		orderIDValues, statusValues, addressValues, err := adapter.republicBinder.Orders(start, limit)
+		orderIDValues, statusValues, addressValues, err := adapter.orderbookBinder.Orders(start, limit)
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -182,19 +177,20 @@ func (adapter *adapter) ListOrders() ([]order.ID, []order.Status, []string, erro
 		addresses = append(addresses, addressValues...)
 		statuses = append(statuses, statusValues...)
 		start += limit
-	}
+	} */
+	return nil, nil, nil, errors.New("unimplemented")
 }
 
 func (adapter *adapter) Sign(data []byte) ([]byte, error) {
-	return adapter.trader.Sign(data)
+	return adapter.account.Sign(data)
 }
 
 func (adapter *adapter) Address() []byte {
-	return adapter.trader.Address().Bytes()
+	return adapter.account.Address().Bytes()
 }
 
-func (adapter *adapter) Status(id order.ID) (order.Status, error) {
-	return adapter.republicBinder.Status(id)
+func (adapter *adapter) Status(ctx context.Context, id order.ID) (order.Status, error) {
+	return adapter.orderbookBinder.Status(ctx, id)
 }
 
 func (adapter *adapter) Settled(id order.ID) (bool, error) {
@@ -210,7 +206,7 @@ func (adapter *adapter) MatchDetails(id order.ID) (orderbook.OrderMatch, error) 
 }
 
 func (adapter *adapter) buildOrderMapping(ord order.Order) (OrderFragmentMapping, error) {
-	pods, err := adapter.republicBinder.Pods()
+	/* pods, err := adapter.dnrBinder.Pods()
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +242,7 @@ func (adapter *adapter) buildOrderMapping(ord order.Order) (OrderFragmentMapping
 				Index: int64(i + 1),
 			}
 
-			pubKey, err := adapter.republicBinder.PublicKey(pod.Darknodes[i].ID().Address())
+			pubKey, err := adapter.orderbookBinder.PublicKey(pod.Darknodes[i].ID().Address())
 			if err != nil {
 				return nil, err
 			}
@@ -275,7 +271,9 @@ func (adapter *adapter) buildOrderMapping(ord order.Order) (OrderFragmentMapping
 		}
 	}
 
-	return orderFragmentMapping, nil
+	return orderFragmentMapping, nil */
+
+	return nil, errors.New("unimplemented")
 }
 
 func (adapter *adapter) BalanceCheck(order order.Order) error {

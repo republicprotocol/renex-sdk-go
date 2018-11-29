@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/republicprotocol/beth-go"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -19,16 +21,15 @@ import (
 	"github.com/republicprotocol/renex-sdk-go/adapter/bindings"
 	"github.com/republicprotocol/renex-sdk-go/adapter/client"
 	"github.com/republicprotocol/renex-sdk-go/adapter/store"
-	"github.com/republicprotocol/renex-sdk-go/adapter/trader"
 	"github.com/republicprotocol/renex-sdk-go/core/funds"
-	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republicprotocol-go/foundation/order"
 )
 
 type adapter struct {
 	renExBalancesContract *bindings.RenExBalances
 	renExTokensContract   *bindings.RenExTokens
 	client                client.Client
-	trader                trader.Trader
+	trader                beth.Account
 	httpAddress           string
 	store.Store
 }
@@ -38,7 +39,7 @@ type approveWithdrawalRequest struct {
 	TokenID uint32 `json:"tokenID"`
 }
 
-func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, store store.Store) (funds.Adapter, error) {
+func NewAdapter(httpAddress string, client client.Client, trader beth.Account, store store.Store) (funds.Adapter, error) {
 	renExBalances, err := bindings.NewRenExBalances(client.RenExBalancesAddress(), bind.ContractBackend(client.Client()))
 	if err != nil {
 		return nil, err
@@ -57,32 +58,22 @@ func NewAdapter(httpAddress string, client client.Client, trader trader.Trader, 
 	}, nil
 }
 
-func (adapter *adapter) RequestWithdrawalWithSignature(tokenCode order.Token, value *big.Int, signature []byte) error {
+func (adapter *adapter) RequestWithdrawalWithSignature(ctx context.Context, tokenCode order.Token, value *big.Int, signature []byte) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
 	}
-
 	if !token.Registered {
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, signature)
-		return adapter.client, tx, err
-	})
-
-	if err != nil {
-		return err
+	txFunc := func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Withdraw(opts, token.Addr, value, signature)
 	}
-
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
-		return err
-	}
-	return nil
+	return adapter.trader.Transact(ctx, nil, txFunc, nil, 1)
 }
 
-func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) (*funds.IdempotentKey, error) {
+func (adapter *adapter) RequestWithdrawalFailSafeTrigger(ctx context.Context, tokenCode order.Token) (*funds.IdempotentKey, error) {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return nil, err
@@ -92,27 +83,27 @@ func (adapter *adapter) RequestWithdrawalFailSafeTrigger(tokenCode order.Token) 
 		return nil, fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.renExBalancesContract.SignalBackupWithdraw(adapter.trader.TransactOpts(), token.Addr)
-		return adapter.client, tx, err
-	})
-	if err != nil {
+	var hash32 [32]byte
+	txFunc := func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+		tx, err := adapter.renExBalancesContract.SignalBackupWithdraw(transactOpts, token.Addr)
+		if err != nil {
+			return nil, err
+		}
+		hash32, err = toBytes32(tx.Hash().Bytes())
+		if err != nil {
+			return nil, err
+		}
+		return tx, nil
+	}
+	if err := adapter.trader.Transact(ctx, nil, txFunc, nil, 1); err != nil {
 		return nil, err
 	}
 
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
-		return nil, err
-	}
-
-	hash32, err := toBytes32(tx.Hash().Bytes())
-	if err != nil {
-		return nil, err
-	}
 	key := funds.IdempotentKey(hash32)
 	return &key, nil
 }
 
-func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *big.Int) error {
+func (adapter *adapter) RequestWithdrawalFailSafe(ctx context.Context, tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -122,18 +113,10 @@ func (adapter *adapter) RequestWithdrawalFailSafe(tokenCode order.Token, value *
 		return fmt.Errorf("Unregistered token")
 	}
 
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.renExBalancesContract.Withdraw(adapter.trader.TransactOpts(), token.Addr, value, []byte{})
-		return adapter.client, tx, err
-	})
-	if err != nil {
-		return err
+	txFunx := func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Withdraw(transactOpts, token.Addr, value, []byte{})
 	}
-
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
-		return err
-	}
-	return nil
+	return adapter.trader.Transact(ctx, nil, txFunx, nil, 1)
 }
 
 func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value *big.Int) ([]byte, error) {
@@ -175,7 +158,7 @@ func (adapter *adapter) RequestWithdrawalSignature(tokenCode order.Token, value 
 	return base64.StdEncoding.DecodeString(response.Signature)
 }
 
-func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) error {
+func (adapter *adapter) RequestDeposit(ctx context.Context, tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -191,23 +174,11 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 	}
 
 	if addr.String() == token.Addr.String() {
-		auth := adapter.trader.TransactOpts()
-		auth.Value = value
-
-		tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-			tx, err := adapter.renExBalancesContract.Deposit(auth, token.Addr, value)
-			return adapter.client, tx, err
-		})
-		if err != nil {
-			return err
+		txFunc := func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+			transactOpts.Value = value
+			return adapter.renExBalancesContract.Deposit(transactOpts, token.Addr, value)
 		}
-		if tx == nil {
-			return fmt.Errorf("Nil Eth Transaction")
-		}
-		if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
-			return err
-		}
-		return nil
+		return adapter.trader.Transact(ctx, nil, txFunc, nil, 1)
 	}
 
 	tokenContract, err := bindings.NewERC20(token.Addr, bind.ContractBackend(adapter.client.Client()))
@@ -215,38 +186,17 @@ func (adapter *adapter) RequestDeposit(tokenCode order.Token, value *big.Int) er
 		return err
 	}
 
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := tokenContract.Approve(adapter.trader.TransactOpts(), adapter.client.RenExBalancesAddress(), value)
-		return adapter.client, tx, err
-	})
-	if err != nil {
-		return err
+	txFunc := func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+		return tokenContract.Approve(transactOpts, adapter.client.RenExBalancesAddress(), value)
 	}
-	if tx == nil {
-		return fmt.Errorf("Nil Approve Transaction")
-	}
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
+	if err := adapter.trader.Transact(ctx, nil, txFunc, nil, 1); err != nil {
 		return err
 	}
 
-	tx2, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := adapter.renExBalancesContract.Deposit(adapter.trader.TransactOpts(), token.Addr, value)
-		return adapter.client, tx, err
-	})
-	if tx2 == nil {
-		return fmt.Errorf("Nil Deposit Transaction")
+	txFunc = func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+		return adapter.renExBalancesContract.Deposit(transactOpts, token.Addr, value)
 	}
-	if err != nil {
-		return err
-	}
-	if tx2 == nil {
-		return fmt.Errorf("Nil Deposit Transaction")
-	}
-
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx2); err != nil {
-		return err
-	}
-	return nil
+	return adapter.trader.Transact(ctx, nil, txFunc, nil, 1)
 }
 
 func (adapter *adapter) CheckStatus(key *funds.IdempotentKey) uint8 {
@@ -297,11 +247,11 @@ func (adapter *adapter) Address() string {
 	return adapter.trader.Address().String()
 }
 
-func (adapter *adapter) TransferEth(address string, value *big.Int) error {
-	return adapter.client.Transfer(common.HexToAddress(address), adapter.trader.TransactOpts(), value)
+func (adapter *adapter) TransferEth(ctx context.Context, address string, value *big.Int) error {
+	return adapter.trader.Transfer(ctx, common.HexToAddress(address), value, 1)
 }
 
-func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, value *big.Int) error {
+func (adapter *adapter) TransferERC20(ctx context.Context, address string, tokenCode order.Token, value *big.Int) error {
 	token, err := adapter.renExTokensContract.Tokens(&bind.CallOpts{}, uint32(tokenCode))
 	if err != nil {
 		return err
@@ -312,25 +262,10 @@ func (adapter *adapter) TransferERC20(address string, tokenCode order.Token, val
 		return err
 	}
 
-	tx, err := adapter.trader.SendTx(func() (client.Client, *types.Transaction, error) {
-		tx, err := erc20.Transfer(adapter.trader.TransactOpts(), common.HexToAddress(address), value)
-		return adapter.client, tx, err
-	})
-	if tx == nil {
-		return fmt.Errorf("Nil Transfer Transaction")
+	txFunc := func(transactOpts *bind.TransactOpts) (*types.Transaction, error) {
+		return erc20.Transfer(transactOpts, common.HexToAddress(address), value)
 	}
-	if err != nil {
-		return err
-	}
-	if tx == nil {
-		return fmt.Errorf("Nil Transfer Transaction")
-	}
-
-	if _, err := adapter.client.WaitTillMined(context.Background(), tx); err != nil {
-		return err
-	}
-
-	return nil
+	return adapter.trader.Transact(ctx, nil, txFunc, nil, 1)
 }
 
 func (adapter *adapter) BalanceEth() (*big.Int, error) {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/republicprotocol/renex-swapper-go/adapter/http"
 	"github.com/republicprotocol/renex-swapper-go/domain/swap"
-	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republicprotocol-go/foundation/order"
 )
 
 type swapper struct {

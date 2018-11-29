@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republicprotocol-go/foundation/order"
 )
 
 // ErrOrdersNotFound is returned when the Storer cannot find any orders.

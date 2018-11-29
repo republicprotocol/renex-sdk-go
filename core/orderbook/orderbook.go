@@ -1,10 +1,11 @@
 package orderbook
 
 import (
+	"context"
 	"math/big"
 	"strings"
 
-	"github.com/republicprotocol/republic-go/order"
+	"github.com/republicprotocol/republicprotocol-go/foundation/order"
 )
 
 type service struct {
@@ -24,18 +25,18 @@ type OrderMatch struct {
 }
 
 type Adapter interface {
-	Status(order.ID) (order.Status, error)
-	Settled(order.ID) (bool, error)
-	RequestOpenOrder(order order.Order) error
-	RequestCancelOrder(orderID order.ID) error
+	Status(ctx context.Context, orderID order.ID) (order.Status, error)
+	Settled(orderID order.ID) (bool, error)
+	RequestOpenOrder(ctx context.Context, order order.Order) error
+	RequestCancelOrder(ctx context.Context, orderID order.ID) error
 	MatchDetails(orderID order.ID) (OrderMatch, error)
 	ListOrders() ([]order.ID, []order.Status, []string, error)
 }
 type Orderbook interface {
-	Status(order.ID) (order.Status, error)
-	Settled(order.ID) (bool, error)
-	OpenOrder(order order.Order) error
-	CancelOrder(orderID order.ID) error
+	Status(ctx context.Context, orderID order.ID) (order.Status, error)
+	Settled(orderID order.ID) (bool, error)
+	OpenOrder(ctx context.Context, order order.Order) error
+	CancelOrder(ctx context.Context, orderID order.ID) error
 	MatchDetails(orderID order.ID) (OrderMatch, error)
 	ListOrdersByTrader(address string) ([]order.ID, error)
 	ListOrdersByStatus(status order.Status) ([]order.ID, error)
@@ -47,12 +48,12 @@ func NewService(adapter Adapter) Orderbook {
 	}
 }
 
-func (service *service) OpenOrder(order order.Order) error {
-	return service.RequestOpenOrder(order)
+func (service *service) OpenOrder(ctx context.Context, order order.Order) error {
+	return service.RequestOpenOrder(ctx, order)
 }
 
-func (service *service) CancelOrder(orderID order.ID) error {
-	return service.RequestCancelOrder(orderID)
+func (service *service) CancelOrder(ctx context.Context, orderID order.ID) error {
+	return service.RequestCancelOrder(ctx, orderID)
 }
 
 func (service *service) ListOrdersByTrader(traderAddress string) ([]order.ID, error) {
