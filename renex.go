@@ -59,6 +59,6 @@ func NewRenEx(network string, account beth.Account) (RenEx, error) {
 	return RenEx{
 		orderbook.NewService(oAdapter),
 		fService,
-		c,
+		client,
 	}, nil
 }
